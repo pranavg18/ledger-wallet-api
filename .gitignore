@@ -1,6 +1,12 @@
 # Course material (briefs, SRS template): local only, never pushed
 docs/course/
 
+# PDF and Word files are never committed (the repo is public); the exported SRS is the one exception
+*.pdf
+*.doc
+*.docx
+!docs/srs.pdf
+
 # Build output
 target/
 *.class
