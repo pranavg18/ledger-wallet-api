@@ -1,0 +1,33 @@
+name: Defect
+description: Something behaves differently from the SRS. Every defect gets a regression test (TQ-8).
+labels: ["bug"]
+body:
+  - type: input
+    id: requirements
+    attributes:
+      label: Violated requirement
+      description: e.g. FR-3.2
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact requests (curl / Bruno) or failing test
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. actual
+    validations:
+      required: true
+  - type: textarea
+    id: regression
+    attributes:
+      label: Regression test plan
+      description: Which test will fail before the fix and pass after it?
+  - type: input
+    id: commit
+    attributes:
+      label: Commit / version
