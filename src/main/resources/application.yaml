@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: ledger-wallet-api
+  # Local dev: `./mvnw spring-boot:run` starts compose.yaml and overrides these automatically.
+  # Other environments: set DB_URL / DB_USERNAME / DB_PASSWORD. Never commit real credentials.
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ledger}
+    username: ${DB_USERNAME:ledger}
+    password: ${DB_PASSWORD:ledger}
+  flyway:
+    locations: classpath:db/migration
+  docker:
+    compose:
+      lifecycle-management: start-only
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
