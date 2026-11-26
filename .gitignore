@@ -1,0 +1,44 @@
+# Course material (briefs, SRS template): local only, never pushed
+docs/course/
+
+# Build output
+target/
+*.class
+*.log
+
+# Maven wrapper downloads
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Local environment and secrets — never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Obsidian per-user state (vault settings in brain/.obsidian/*.json are shared on purpose)
+brain/.obsidian/workspace*.json
+brain/.obsidian/cache
+brain/.trash/
+
+# Claude Code per-user settings
+.claude/settings.local.json
+
+# Python bytecode from scripts/
+__pycache__/
+api-client/environments/*.bru
+
+# LaTeX build files (docs/srs.tex, docs/diagrams/*.tex)
+*.aux
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+docs/diagrams/*.pdf
