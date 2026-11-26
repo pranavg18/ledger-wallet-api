@@ -32,9 +32,4 @@ Closes #
 - [ ] `CHANGELOG.md` updated under `[Unreleased]`
 - [ ] No secrets, tokens or real credentials in code, notes or commit messages
 
-## AI assistance
-
-- [ ] No AI used
-- [ ] AI used. The author has reviewed and can explain every line. ai-session note (if significant): [[ ]]
-
 <!-- Reviewer: at least one approving review from someone who did not write this change. -->

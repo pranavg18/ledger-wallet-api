@@ -45,7 +45,7 @@ Commit early and often, with one logical change per commit. Never commit secrets
 
 ## 4. Pull requests
 
-- Fill in the PR template: linked issue, requirement IDs, how it was tested, and any AI assistance.
+- Fill in the PR template: linked issue, requirement IDs and how it was tested.
 - At least **one reviewer who did not write the change** approves it. AI-generated code gets the
   same human review as anything else, and the author must be able to explain every line.
 - CI must pass: build, lint, tests, secret scan, skill validation, brain validation.
