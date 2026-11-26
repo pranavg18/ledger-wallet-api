@@ -1,0 +1,22 @@
+# Local development database only. Credentials here are throwaway dev values, not secrets.
+# Started automatically by `./mvnw spring-boot:run` (spring-boot-docker-compose),
+# or manually with `docker compose up -d`.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ledger
+      POSTGRES_USER: ledger
+      POSTGRES_PASSWORD: ledger
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledger -d ledger"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    volumes:
+      - ledger-pgdata:/var/lib/postgresql/data
+
+volumes:
+  ledger-pgdata:
