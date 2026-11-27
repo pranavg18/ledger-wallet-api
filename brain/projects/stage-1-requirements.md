@@ -54,3 +54,9 @@ Use `brain-ingest` with a real source for each topic. Write your own handle in `
 These were written by Claude Code from general knowledge, with sources listed. A member should
 check each against its sources during `brain-refine` and correct anything wrong. See
 [[ai-session-2026-11-08-stage-1-skeleton]].
+
+## Aprajita's Stage 1 research notes
+
+- [[jakarta-bean-validation-request-input]]
+- [[flyway-migrations-append-only-triggers]]
+- [[uuid-v4-v7-sequential-ids]]
