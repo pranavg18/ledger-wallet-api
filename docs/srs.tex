@@ -1,0 +1,1206 @@
+% Software Requirements Specification for Ledger Wallet API, version 1.3.
+% LaTeX version of docs/srs.md (the Markdown file in the repository is the working copy).
+% Build:  tectonic docs/srs.tex   (or run pdflatex / xelatex twice so the contents page is filled in)
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{newtxtext,newtxmath}
+  \usepackage[varqu,scaled=0.95]{zi4}
+\else
+  \usepackage{newtxtext,newtxmath}
+  \setmonofont{Inconsolatazi4}[Extension=.otf, UprightFont=*-Regular, BoldFont=*-Bold, Scale=0.95]
+\fi
+\usepackage[a4paper,margin=2.5cm,headheight=14pt]{geometry}
+\usepackage{microtype}
+\usepackage{longtable,booktabs,array,calc}
+\usepackage{etoolbox}
+\usepackage{needspace}
+\usepackage{tocloft}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf,skip=6pt]{caption}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,calc,fit}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{xurl}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true, linkcolor=black, urlcolor=blue!55!black,
+  pdftitle={Software Requirements Specification for Ledger Wallet API},
+  pdfauthor={Pranav Goyal, Aprajita Agarwal, Rudra Hardik Shroff, Tanuj Hardikkumar Shah},
+  pdfsubject={SRS version 1.3, Stage 1},
+}
+
+% Section titles already carry their numbers (1., 1.1, 4.1.1 ...), as in the IEEE template.
+\setcounter{secnumdepth}{-\maxdimen}
+\setcounter{tocdepth}{2}
+\setlength{\cftbeforesecskip}{0.45em}
+\renewcommand{\cfttoctitlefont}{\Large\bfseries}
+\pretocmd{\section}{\needspace{8\baselineskip}}{}{}
+\pretocmd{\subsection}{\needspace{6\baselineskip}}{}{}
+\pretocmd{\subsubsection}{\needspace{5\baselineskip}}{}{}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{3em}
+\providecommand{\tightlist}{\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}}
+\newcounter{none} % lets uncaptioned tables skip the table counter
+\AtBeginEnvironment{longtable}{\small}
+\renewcommand{\arraystretch}{1.2}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Software Requirements Specification for Ledger Wallet API}
+\fancyhead[R]{\small Page \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\begin{document}
+\pagenumbering{roman}
+
+\begin{titlepage}
+  \centering
+  \vspace*{3.5cm}
+  {\Huge\bfseries Software Requirements Specification\par}
+  \vspace{0.8cm}
+  {\LARGE for\par}
+  \vspace{0.8cm}
+  {\Huge\bfseries Ledger Wallet API\par}
+  \vspace{1.5cm}
+  {\Large Version 1.3 (Stage 1)\par}
+  \vspace{2.5cm}
+  {\large Prepared by\par}
+  \vspace{0.3cm}
+  {\large Pranav Goyal\\ Aprajita Agarwal\\ Rudra Hardik Shroff\\ Tanuj Hardikkumar Shah\par}
+  \vspace{1.2cm}
+  {\large Team TRAP\par}
+  \vspace{1.2cm}
+  {\large Date created: 2026-11-08\par}
+  \vfill
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+
+\section{Revision History}\label{revision-history}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2245}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1122}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5816}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0816}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Date
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Reason For Changes
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Version
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Pranav Goyal & 2026-10-28 & Initial draft for Stage 1 & 0.1 \\
+Aprajita Agarwal & 2026-11-02 & Fixes from team review: idempotency, hash chain, system accounts, error codes, amount limit, traceability; closed TBD-1, TBD-2, TBD-5, TBD-6 & 0.2 \\
+Rudra Hardik Shroff & 2026-11-04 & Fixes from team review: admin-only reversals, HMAC key rules, system-account entries, SK-5 pass rule, error codes, CI brain checks, references & 0.3 \\
+Tanuj Hardikkumar Shah & 2026-11-08 & Fixes from team review: 401 handling and reversal check order, development and test HMAC key, HMAC key check at startup, reference details & 0.4 \\
+Pranav Goyal & 2026-11-09 & Named the table that holds the HMAC key check value (NFR-DB-1) & 0.5 \\
+Pranav Goyal, Aprajita Agarwal, Rudra Hardik Shroff, Tanuj Hardikkumar Shah & 2026-11-09 & Team review and approval & 1.0 \\
+Pranav Goyal & 2026-11-09 & Fixes from team review (Rudra Hardik Shroff): idempotency key scope and expiry, email rules, system account creation, hash chain format, database privilege boundary, entry currency constraint & 1.1 \\
+Pranav Goyal & 2026-11-09 & Wording fixes from team review: late-retry rule (FR-2.7, A-4), ADR-0008 reference, email syntax & 1.2 \\
+Pranav Goyal & 2026-11-09 & FR-4.1 no longer claims detection of every privileged change (team review, Rudra Hardik Shroff) & 1.3 \\
+\end{longtable}
+}
+
+\clearpage
+\pagenumbering{arabic}
+
+\section{1. Introduction}\label{introduction}
+
+\subsection{1.1 Purpose}\label{purpose}
+
+This document specifies the software requirements for \textbf{Ledger Wallet API, release 1.0}. It is a
+backend service that manages user wallets and records every movement of money in a tamper-evident,
+double-entry ledger. The SRS covers the whole product: the REST API, the persistence layer, the
+administrative reconciliation function, and the engineering requirements for the Agent Skills
+that support the team's workflow. It doesn't cover any client application (web or mobile UI),
+which is out of scope.
+
+\subsection{1.2 Document Conventions}\label{document-conventions}
+
+\begin{itemize}
+\tightlist
+\item
+  Requirement IDs are unique and stable. They are never reused or renumbered:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{FR-n} / \texttt{FR-n.m}: functional requirements. \texttt{FR-1} to \texttt{FR-5} are the five requirements from the
+    project brief, and \texttt{FR-n.m} refines them.
+  \item
+    \texttt{NFR-\textless{}CAT\textgreater{}-n}: non-functional requirements (INT integrity, CON concurrency, PERF performance,
+    SEC security, REL reliability, MNT maintainability, OBS observability, PORT portability, USE
+    usability, DOC documentation, DB database).
+  \item
+    \texttt{SK-n}: Agent Skill requirements. \texttt{TQ-n}: testing and quality requirements (TQ-1 to TQ-6 and
+    TQ-9 come from the brief, TQ-7 and TQ-8 from the SDLC document).
+  \item
+    \texttt{BR-n} business rules, \texttt{C-n} constraints, \texttt{A-n} assumptions and \texttt{TBD-n} open items are local to
+    this document. \texttt{SE-n} and \texttt{SB-n} cite requirements of the SDLC document (reference 2).
+  \end{itemize}
+\item
+  \textbf{Priority} is High, Medium or Low. A detailed requirement inherits its parent feature's
+  priority unless it states its own. Requirements in sections 5 and 6 are High unless stated.
+\item
+  ``shall'' means mandatory, ``should'' means desirable, and ``may'' means optional.
+\item
+  Monetary examples use INR. \texttt{amountMinor} values are in paise (1 INR = 100 paise).
+\item
+  \texttt{TBD} items are tracked in \hyperref[appendix-c-to-be-determined-list]{Appendix C}.
+\end{itemize}
+
+\subsection{1.3 Intended Audience and Reading Suggestions}\label{intended-audience-and-reading-suggestions}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Reader
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Read first
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Then
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Developers (team members) & 2, 4 & 5, 6, Appendix B \\
+Testers / QA & 4 (each requirement is written to be verifiable) & 5, \texttt{docs/\allowbreak{}testing.md} \\
+Course reviewers / instructors & 1, 2.2 & 4 summaries, \texttt{docs/\allowbreak{}traceability.md} \\
+AI coding agents & \texttt{AGENTS.md}, then 4 and 5.5 (business rules) & \\
+\end{longtable}
+}
+
+Section 2 describes the product at a high level. Section 3 defines the interfaces. Section 4 holds
+the detailed functional requirements, grouped by feature. Section 5 holds the non-functional
+requirements and business rules. Section 6 covers the database, the Agent Skills, and testing and
+quality.
+
+\subsection{1.4 Product Scope}\label{product-scope}
+
+In poorly designed systems, concurrent balance updates overwrite each other, and a network retry
+can charge a customer twice. Ledger Wallet API treats money as a verifiable fact rather than a
+mutable number:
+
+\begin{itemize}
+\tightlist
+\item
+  every credit has an equal and opposite debit (double-entry);
+\item
+  retried requests never move money twice (idempotency keys);
+\item
+  concurrent requests never corrupt a balance (database-level locking);
+\item
+  history is never edited, and corrections are explicit reversals (immutable audit trail);
+\item
+  an administrator can prove at any time that the books balance (reconciliation).
+\end{itemize}
+
+The educational goal is to show core computer-science principles (ACID transactions, data
+integrity, idempotency, clean API design) inside a maintainable, well-documented, well-tested
+codebase built by a team with AI assistance.
+
+\subsection{1.5 References}\label{references}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Course instructors, \emph{Project Statement: Financial Ledger \& Digital Wallet API}, October 2026.
+  Local copy: \texttt{docs/\allowbreak{}course/\allowbreak{}Project\_\allowbreak{}2\_\allowbreak{}Financial\_\allowbreak{}Ledger.pdf}.
+\item
+  Course instructors, \emph{The AI-Assisted Software Development Life Cycle (SDLC)}, October 2026.
+  Local copy: \texttt{docs/\allowbreak{}course/\allowbreak{}SDLC\_\allowbreak{}and\_\allowbreak{}Workflow.pdf}.
+\item
+  K. E. Wiegers, \emph{Software Requirements Specification} template (IEEE format), 1999, supplied with
+  the course materials. Local copy: \texttt{docs/\allowbreak{}course/\allowbreak{}srs\_\allowbreak{}template-ieee.doc}.
+\item
+  IETF, \emph{The Idempotency-Key HTTP Header Field} (Internet-Draft),
+  \url{https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/}
+\item
+  RFC 9457, \emph{Problem Details for HTTP APIs}, \url{https://www.rfc-editor.org/rfc/rfc9457}
+\item
+  PostgreSQL 17 documentation, chapter 13 \emph{Concurrency Control},
+  \url{https://www.postgresql.org/docs/17/mvcc.html}
+\item
+  ISO 4217, \emph{Codes for the representation of currencies}. Official code list from the
+  maintenance agency (SIX): \url{https://www.six-group.com/en/products-services/financial-information/market-reference-data/data-standards.html}
+\item
+  Team brain notes: \texttt{brain/\allowbreak{}resources/\allowbreak{}double-entry-bookkeeping.md}, \texttt{idempotency-keys.md},
+  \texttt{postgresql-concurrency-control.md}, \texttt{money-as-integer-minor-units.md}.
+\item
+  Architecture Decision Records: \texttt{docs/\allowbreak{}adr/\allowbreak{}}.
+\item
+  \emph{Agent Skills specification}, \url{https://agentskills.io/specification}
+\end{enumerate}
+
+References 1 to 3 are issued to students by the course instructors. The local copies are
+git-ignored, so they are not in the repository.
+
+\section{2. Overall Description}\label{overall-description}
+
+\subsection{2.1 Product Perspective}\label{product-perspective}
+
+This is a new, self-contained backend product. It has no predecessor and does not integrate with
+real banks or payment networks. Money enters the system only through a simulated deposit that
+debits an internal \emph{system funding account}.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+    box/.style={draw, rounded corners=2pt, align=center, inner sep=5pt, fill=white},
+    flow/.style={-{Stealth[length=2.2mm]}},
+    lbl/.style={font=\footnotesize, fill=white, inner sep=1.5pt}]
+  \node[box] (client) at (0,0)
+    {API client\\{\footnotesize (curl / Bruno / Postman /}\\{\footnotesize tests / skills)}};
+  \node[box] (admin) at (0,-2.4) {Administrator};
+  \node[box] (api) at (8.4,0) {REST controllers};
+  \node[box, text width=5.7cm] (service) at (8.4,-1.7)
+    {Services\\{\footnotesize transfer $\cdot$ idempotency $\cdot$ reversal $\cdot$ reconciliation}};
+  \node[box] (domain) at (6.5,-3.5) {Domain rules\\{\footnotesize (Money, balancing)}};
+  \node[box] (repo) at (10.3,-3.5) {Repository interfaces};
+  \coordinate (top) at (8.4,0.95);
+  \node[draw, dashed, rounded corners=4pt, inner sep=9pt, fit=(top)(api)(service)(domain)(repo),
+    label={[anchor=north west, font=\footnotesize\bfseries, inner sep=6pt]north west:Ledger Wallet API (Spring Boot)}] {};
+  \node[draw, cylinder, shape border rotate=90, aspect=0.18, align=center, minimum height=1.6cm,
+    inner sep=4pt, fill=white] (db) at (10.3,-6.4)
+    {PostgreSQL 17\\{\footnotesize wallets $\cdot$ ledger $\cdot$ idempotency keys}};
+  \draw[flow] (client.east) -- node[lbl, above=2pt, pos=0.4] {HTTP JSON (REST)} (api.west);
+  \draw[flow] (admin.east) -- node[lbl, sloped, above=2pt, pos=0.32] {X-Admin-Token} (api.south west);
+  \draw[flow] (api) -- (service);
+  \draw[flow] (service) -- (domain);
+  \draw[flow] (service) -- (repo);
+  \draw[flow] (repo) -- node[lbl, right=3pt, pos=0.72] {JDBC / SQL transactions} (db);
+\end{tikzpicture}
+\caption{Product context: the API, its clients and its database.}
+\label{fig:context}
+\end{figure}
+
+\subsection{2.2 Product Functions}\label{product-functions}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Wallet management}: create users and one wallet per user per currency; view balances and
+  statements (FR-1).
+\item
+  \textbf{Funding}: deposit simulated external money into a wallet (FR-1.6).
+\item
+  \textbf{Idempotent transfers}: move money between two wallets of the same currency, safely retryable
+  (FR-2).
+\item
+  \textbf{Concurrency safety}: correct balances under simultaneous transfers (FR-3).
+\item
+  \textbf{Immutable audit trail and reversals}: append-only ledger, with corrections as reversal
+  transactions (FR-4).
+\item
+  \textbf{Reconciliation}: an admin report proving that debits equal credits and that cached balances
+  match the ledger (FR-5).
+\item
+  \textbf{Health check}: liveness and readiness of the service and its database (NFR-OBS-1).
+\end{itemize}
+
+The use case diagram below shows who can use each function (user classes are described in 2.3).
+An administrator can do everything an API client can, plus reversals and reconciliation.
+\guillemotleft{}include\guillemotright{} marks a step that several use cases share. The diagram's source is
+\texttt{docs/\allowbreak{}diagrams/\allowbreak{}use-case.tex}.
+
+\begin{figure}[!htbp]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\small,
+    usecase/.style={ellipse, draw, minimum width=3.9cm, minimum height=0.95cm, inner sep=1pt,
+      align=center, fill=white},
+    generalize/.style={draw, -{Triangle[open, length=3mm, width=3mm]}},
+    stereo/.style={font=\scriptsize, fill=white, inner sep=1pt},
+    actor/.pic={
+      \draw[thick] (0,0.55) circle (0.22);
+      \draw[thick] (0,0.33) -- (0,-0.25);
+      \draw[thick] (-0.35,0.12) -- (0.35,0.12);
+      \draw[thick] (0,-0.25) -- (-0.28,-0.72) (0,-0.25) -- (0.28,-0.72);
+    }]
+  \draw[thick] (2.3,0.75) rectangle (13.0,-15.0);
+  \node[anchor=north, font=\bfseries] at (7.65,0.7) {Ledger Wallet API};
+  \pic at (0.6,-4.4) {actor};
+  \node[align=center] (clientlabel) at (0.6,-5.55) {API client /\\wallet user};
+  \pic at (0.6,-11.8) {actor};
+  \node[align=center] at (0.6,-12.95) {Administrator /\\auditor};
+  \pic at (14.6,-14.0) {actor};
+  \node[align=center] at (14.6,-15.15) {Developer /\\AI agent};
+  \node[usecase] (create-user)   at (5.5,-0.75) {Create user\\[-2pt]\scriptsize (FR-1.1)};
+  \node[usecase] (create-wallet) at (5.5,-2.0)  {Create wallet\\[-2pt]\scriptsize (FR-1.2)};
+  \node[usecase] (view-wallet)   at (5.5,-3.25) {View wallet and balance\\[-2pt]\scriptsize (FR-1.4)};
+  \node[usecase] (statement)     at (5.5,-4.5)  {View statement\\[-2pt]\scriptsize (FR-1.5)};
+  \node[usecase] (view-tx)       at (5.5,-5.75) {View transaction\\[-2pt]\scriptsize (FR-4.7)};
+  \node[usecase] (deposit)       at (5.5,-7.0)  {Deposit funds\\[-2pt]\scriptsize (FR-1.6)};
+  \node[usecase] (transfer)      at (5.5,-8.25) {Transfer funds\\[-2pt]\scriptsize (FR-2)};
+  \node[usecase] (reverse)       at (5.5,-11.0) {Reverse transaction\\[-2pt]\scriptsize (FR-4.2)};
+  \node[usecase] (reconcile)     at (5.5,-12.7) {Run reconciliation\\[-2pt]\scriptsize (FR-5)};
+  \node[usecase] (idempotency)   at (10.5,-9.4)  {Apply idempotency key\\[-2pt]\scriptsize (FR-2.2 to FR-2.7)};
+  \node[usecase] (token)         at (10.5,-12.2) {Verify admin token\\[-2pt]\scriptsize (NFR-SEC-4)};
+  \node[usecase] (health)        at (10.5,-14.0) {Check service health\\[-2pt]\scriptsize (NFR-OBS-1)};
+  \foreach \uc in {create-user, create-wallet, view-wallet, statement, view-tx, deposit, transfer}
+    \draw (1.0,-4.3) -- (\uc.west);
+  \foreach \uc in {reverse, reconcile}
+    \draw (1.0,-11.7) -- (\uc.west);
+  \draw (14.2,-13.9) -- (health.east);
+  \draw[generalize] (0.6,-11.0) -- (clientlabel.south);
+  \foreach \from/\to in {deposit.east/idempotency.north west, transfer.east/idempotency.west,
+      reverse.north east/idempotency.south west, reverse.east/token.north west,
+      reconcile.east/token.west} {
+    \draw[dashed] (\from) -- node[stereo, sloped, pos=0.45] {\guillemotleft include\guillemotright} (\to);
+    \draw[-{To[length=2.2mm]}] ($(\to)!1.5mm!(\from)$) -- (\to);
+  }
+\end{tikzpicture}}
+\caption{Use case diagram. The administrator inherits every API client use case (generalisation arrow).}
+\label{fig:use-case}
+\end{figure}
+
+\subsection{2.3 User Classes and Characteristics}\label{user-classes-and-characteristics}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2100}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3400}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3300}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1200}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+User class
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Privileges
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Importance
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{API client / wallet user} & Software acting for an end user (test client, script, future app). Technically skilled, uses JSON over HTTP & Create users and wallets, deposit, transfer, read wallets and transactions & Primary \\
+\textbf{Administrator / auditor} & Operator who corrects the ledger and verifies its integrity & All of the above plus reversals and reconciliation & Secondary \\
+\textbf{Developer / AI agent} & Team members and Claude Code working on the codebase & Local environment, skills, test data & Secondary \\
+\end{longtable}
+}
+
+Release 1.0 has no end-user authentication. Client calls are trusted. Only the operator actions,
+reversals (FR-4.2) and reconciliation (FR-5.1), require \texttt{X-Admin-Token}. This is an accepted risk
+for a course deployment: any client can read, fund or transfer from any wallet.
+
+\subsection{2.4 Operating Environment}\label{operating-environment}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Runtime:} Java 21 (LTS) JVM. Spring Boot 4.1. Runs on macOS, Linux and Windows (NFR-PORT-1).
+\item
+  \textbf{Database:} PostgreSQL 17, run locally through Docker Compose and in tests through
+  Testcontainers.
+\item
+  \textbf{CI:} GitHub Actions \texttt{ubuntu-latest} runners. macOS and Windows (NFR-PORT-1) are checked by
+  running \texttt{local-check} (SK-4) on team members' machines, because GitHub's hosted macOS and
+  Windows runners don't provide the Docker Linux containers the integration tests need.
+\item
+  \textbf{Clients:} any HTTP/1.1 client (curl, Bruno, Postman, Python scripts in the skills).
+\item
+  \textbf{Deployment:} release 1.0 runs locally on a developer machine. Anything beyond that (a Docker
+  image, a hosted demo) is TBD-3.
+\end{itemize}
+
+\subsection{2.5 Design and Implementation Constraints}\label{design-and-implementation-constraints}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{C-1} Language and framework: Java 21 + Spring Boot, built with Maven (ADR-0002).
+\item
+  \textbf{C-2} Database: PostgreSQL. Schema managed only through versioned Flyway migrations (ADR-0003).
+  The course brief encourages SQLite. The team chose PostgreSQL deliberately for row-level locking
+  and production realism (ADR-0003 records the trade-off).
+\item
+  \textbf{C-3} Monetary amounts are integers in minor units (ADR-0004). Floating-point types are
+  forbidden for money.
+\item
+  \textbf{C-4} External dependencies (database, clock, ID generation) shall sit behind provider
+  interfaces (SE-6).
+\item
+  \textbf{C-5} All work is tracked in GitHub Issues, every change goes through a reviewed pull request,
+  and CI must pass before merge.
+\item
+  \textbf{C-6} AI assistants may be used. A human reviews every AI-generated change, and no secrets are
+  shared with AI tools.
+\end{itemize}
+
+\subsection{2.6 User Documentation}\label{user-documentation}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{README.md}: overview and quick start.
+\item
+  \texttt{docs/\allowbreak{}user-guide.md}: how to run the API and perform every operation with example requests.
+\item
+  \texttt{docs/\allowbreak{}openapi.yaml}: OpenAPI 3.1 contract, served as Swagger UI in a later stage (TBD-4).
+\item
+  \texttt{api-client/\allowbreak{}}: Bruno collection for manual testing and the live demo (Stage 3).
+\item
+  \texttt{AGENTS.md} and \texttt{.claude/\allowbreak{}skills/\allowbreak{}*/\allowbreak{}SKILL.md}: developer and AI-agent documentation.
+\end{itemize}
+
+\subsection{2.7 Assumptions and Dependencies}\label{assumptions-and-dependencies}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{A-1} Team members can run Docker locally. Integration tests and the local database depend on
+  it.
+\item
+  \textbf{A-2} One currency per wallet. No currency conversion (FX) in release 1.0.
+\item
+  \textbf{A-3} A single service instance (no horizontal scaling). Correctness does not depend on this:
+  PostgreSQL row locks and unique constraints work across any number of instances, so no
+  distributed locks are needed.
+\item
+  \textbf{A-4} Clients generate unique idempotency keys (UUID v4 recommended) and do not retry an
+  operation more than 24 hours after first sending it (FR-2.7).
+\item
+  \textbf{A-5} Dependencies: Spring Boot, PostgreSQL JDBC driver, Flyway, Testcontainers. All are open
+  source and pinned in \texttt{pom.xml}.
+\end{itemize}
+
+\section{3. External Interface Requirements}\label{external-interface-requirements}
+
+\subsection{3.1 User Interfaces}\label{user-interfaces}
+
+There is no graphical UI. The product's ``user interface'' is the HTTP API (3.3). Every error
+response shall use the RFC 9457 \texttt{application/\allowbreak{}problem+json} format with a stable, machine-readable
+\texttt{code} (NFR-USE-1).
+
+\subsection{3.2 Hardware Interfaces}\label{hardware-interfaces}
+
+None. The product runs on commodity hardware and has no device interfaces.
+
+\subsection{3.3 Software Interfaces}\label{software-interfaces}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.1800}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.8200}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Interface
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Detail
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+REST API & JSON over HTTP, base path \texttt{/\allowbreak{}api/\allowbreak{}v1}. Contract: \texttt{docs/\allowbreak{}openapi.yaml} \\
+PostgreSQL 17 & JDBC (\texttt{org.postgresql} driver). Transactions with row-level locks. Flyway migrations \\
+Actuator & \texttt{GET\ /\allowbreak{}actuator/\allowbreak{}health} (read-only), used by \texttt{local-check} \\
+\end{longtable}
+}
+
+\textbf{Endpoint summary} (details in \texttt{docs/\allowbreak{}openapi.yaml}):
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0900}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4400}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1700}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Path
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Purpose
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Idempotency-Key
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+POST & \texttt{/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}users} & Create user & n/a \\
+POST & \texttt{/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}users/\allowbreak{}\{userId\}/\allowbreak{}wallets} & Create wallet in a currency & n/a \\
+GET & \texttt{/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}wallets/\allowbreak{}\{walletId\}} & Wallet details and balance & n/a \\
+GET & \texttt{/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}wallets/\allowbreak{}\{walletId\}/\allowbreak{}entries} & Ledger entries (statement), paginated & n/a \\
+POST & \texttt{/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}deposits} & Fund a wallet from the system account & \textbf{required} \\
+POST & \texttt{/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}transfers} & Transfer between wallets & \textbf{required} \\
+GET & \texttt{/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}transactions/\allowbreak{}\{transactionId\}} & Transaction with its entries & n/a \\
+POST & \texttt{/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}transactions/\allowbreak{}\{transactionId\}/\allowbreak{}reversals} & Reverse a transaction (admin) & \textbf{required} \\
+GET & \texttt{/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}admin/\allowbreak{}reconciliation} & Reconciliation report (admin) & n/a \\
+\end{longtable}
+}
+
+\subsection{3.4 Communications Interfaces}\label{communications-interfaces}
+
+\begin{itemize}
+\tightlist
+\item
+  HTTP/1.1, JSON encoded as UTF-8. Request bodies with unknown fields are rejected (NFR-SEC-1).
+\item
+  Headers: \texttt{Idempotency-Key} (client to server), \texttt{Idempotent-Replayed:\ true} (server to client, on
+  replays), \texttt{X-Admin-Token} (admin endpoints).
+\item
+  Identifiers are UUIDs. Timestamps are ISO 8601 in UTC.
+\item
+  TLS termination is out of scope for local and course deployments (TBD-3).
+\end{itemize}
+
+\section{4. System Features}\label{system-features}
+
+\subsection{4.1 User and Wallet Management (FR-1)}\label{user-and-wallet-management-fr-1}
+
+\subsubsection{4.1.1 Description and Priority}\label{description-and-priority}
+
+\textbf{FR-1} (Wallet Initialization): The system shall create user accounts with distinct currency
+wallets, and every balance shall be backed by double-entry ledger entries. \textbf{Priority: High.}
+
+\subsubsection{4.1.2 Stimulus/Response Sequences}\label{stimulusresponse-sequences}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Client \texttt{POST\ /\allowbreak{}users} with name and email \ensuremath{\rightarrow} 201 with the user \texttt{id}.
+\item
+  Client \texttt{POST\ /\allowbreak{}users/\allowbreak{}\{id\}/\allowbreak{}wallets} with \texttt{currency:\ "INR"} \ensuremath{\rightarrow} 201 with the wallet, \texttt{balanceMinor:\ 0}.
+\item
+  Client \texttt{POST\ /\allowbreak{}deposits} with an Idempotency-Key, wallet and amount \ensuremath{\rightarrow} 201 with a transaction of
+  two entries (system account \ensuremath{-}amount, wallet +amount).
+\item
+  Client \texttt{GET\ /\allowbreak{}wallets/\allowbreak{}\{id\}} \ensuremath{\rightarrow} balance equal to the sum of the wallet's entries.
+\end{enumerate}
+
+\subsubsection{4.1.3 Functional Requirements}\label{functional-requirements}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{FR-1.1} The system shall create a user from a \texttt{name} (1--100 characters) and a unique \texttt{email}.
+  Leading and trailing whitespace is trimmed from the email, which must then be a syntactically
+  valid address (exactly one \texttt{@} with non-empty text on both sides, and no spaces) of at most 254
+  characters. Uniqueness ignores letter case, so \texttt{A@x.com} and
+  \texttt{a@x.com} are the same user. A duplicate email returns 409 \texttt{EMAIL\_\allowbreak{}ALREADY\_\allowbreak{}EXISTS}.
+\item
+  \textbf{FR-1.2} The system shall create a wallet for an existing user in a supported currency: a
+  valid ISO 4217 code from a configured list (initially INR, USD and EUR, which all have a minor
+  unit). A second wallet for the same user and currency returns 409 \texttt{WALLET\_\allowbreak{}ALREADY\_\allowbreak{}EXISTS}. An
+  unknown user returns 404. An invalid or unsupported currency returns 400.
+\item
+  \textbf{FR-1.3} A new wallet's balance shall be 0. No endpoint shall set a balance directly. Balances
+  change only by posting ledger transactions.
+\item
+  \textbf{FR-1.4} \texttt{GET\ /\allowbreak{}wallets/\allowbreak{}\{id\}} shall return id, owner, currency, \texttt{balanceMinor} and creation
+  time.
+\item
+  \textbf{FR-1.5} \texttt{GET\ /\allowbreak{}wallets/\allowbreak{}\{id\}/\allowbreak{}entries} shall return the wallet's ledger entries, newest first,
+  with cursor pagination (default 50, max 200).
+\item
+  \textbf{FR-1.6} \texttt{POST\ /\allowbreak{}deposits} shall fund a wallet by posting one transaction: a debit on the
+  currency's system funding account and an equal credit on the wallet. The body has \texttt{walletId},
+  \texttt{amountMinor}, \texttt{currency} and an optional \texttt{description} (\ensuremath{\le} 255 characters). An unknown wallet
+  returns 404, and a currency that differs from the wallet's returns 422 \texttt{CURRENCY\_\allowbreak{}MISMATCH}. It
+  requires an Idempotency-Key and follows the same rules as FR-2.2 to FR-2.7 and FR-2.10.
+\item
+  \textbf{FR-1.7} The system shall maintain one internal system funding account per supported
+  currency. System accounts are not owned by users and may hold a negative balance. They are
+  internal: the API treats a request naming one as naming an unknown wallet (404), so a system
+  account can never be the source or destination of a transfer or the target of a deposit. Their
+  entries still appear in transaction responses, marked \texttt{systemAccount:\ true}, and looking up such
+  a wallet ID returns 404 by design. A system account shall exist for every supported currency
+  before the service accepts requests (e.g.~created at startup if missing, by an insert that does
+  nothing when the account already exists), so a deposit never fails for lack of one.
+\end{itemize}
+
+\subsection{4.2 Idempotent Transfers (FR-2)}\label{idempotent-transfers-fr-2}
+
+\subsubsection{4.2.1 Description and Priority}\label{description-and-priority-1}
+
+\textbf{FR-2} (Idempotent Transfers): The system shall transfer funds between two wallets. The endpoint
+shall require an idempotency key (header), so retried network requests never double-charge an
+account. \textbf{Priority: High.}
+
+\subsubsection{4.2.2 Stimulus/Response Sequences}\label{stimulusresponse-sequences-1}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Client \texttt{POST\ /\allowbreak{}transfers} with an \texttt{Idempotency-Key:\ K} and a body \ensuremath{\rightarrow} 201 with a transaction.
+\item
+  The network drops the response. The client retries with the same K and the same body \ensuremath{\rightarrow} the
+  \textbf{same} 201 response, header \texttt{Idempotent-Replayed:\ true}, and no new entries.
+\item
+  The client mistakenly reuses K with a different body \ensuremath{\rightarrow} 422 \texttt{IDEMPOTENCY\_\allowbreak{}KEY\_\allowbreak{}REUSED}.
+\end{enumerate}
+
+\subsubsection{4.2.3 Functional Requirements}\label{functional-requirements-1}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{FR-2.1} \texttt{POST\ /\allowbreak{}transfers} shall accept \texttt{sourceWalletId}, \texttt{destinationWalletId}, \texttt{amountMinor}
+  (positive integer), \texttt{currency} and optional \texttt{description} (\ensuremath{\le} 255 characters).
+\item
+  \textbf{FR-2.2} The request shall include an \texttt{Idempotency-Key} header of 1--255 printable ASCII
+  characters. A missing header returns 400 \texttt{IDEMPOTENCY\_\allowbreak{}KEY\_\allowbreak{}MISSING}. A malformed one returns 400
+  \texttt{IDEMPOTENCY\_\allowbreak{}KEY\_\allowbreak{}INVALID}. Keys are global: one key identifies one operation across all
+  money-moving endpoints, so reusing a key on another endpoint returns 422
+  \texttt{IDEMPOTENCY\_\allowbreak{}KEY\_\allowbreak{}REUSED} (the fingerprint includes the method and path, FR-2.10).
+\item
+  \textbf{FR-2.3} A request repeating a stored key with an identical request fingerprint shall return
+  the stored status and body unchanged, with \texttt{Idempotent-Replayed:\ true}, and shall create no
+  ledger entries.
+\item
+  \textbf{FR-2.4} A request repeating a stored key with a different fingerprint shall return 422
+  \texttt{IDEMPOTENCY\_\allowbreak{}KEY\_\allowbreak{}REUSED} and change nothing.
+\item
+  \textbf{FR-2.5} A request whose key belongs to a request still being processed shall return 409
+  \texttt{IDEMPOTENCY\_\allowbreak{}REQUEST\_\allowbreak{}IN\_\allowbreak{}PROGRESS} without waiting for that request to finish (e.g.~using a
+  non-blocking lock on the key, such as a PostgreSQL advisory lock).
+\item
+  \textbf{FR-2.6} The idempotency record shall be committed in the same database transaction as the
+  operation's ledger writes, if any. It stores the first completed response: a success, or a
+  rejection by a business rule (404, 409 or 422). Input-validation errors (400), authentication
+  errors (401), the responses of FR-2.4 and FR-2.5, and failures that roll back (5xx) leave no
+  record, so the client may retry with the same key.
+\item
+  \textbf{FR-2.7} Idempotency records shall be retained for at least 24 hours, so a retry within 24 hours
+  is always replayed. Once a record has been purged, its key is treated as new, so a retry after
+  that may move money again. This is an accepted limit: clients do not retry an operation more
+  than 24 hours after first sending it (A-4).
+\item
+  \textbf{FR-2.8} A successful transfer shall post exactly one transaction with exactly two entries: a
+  debit of \texttt{amountMinor} on the source and a credit of \texttt{amountMinor} on the destination.
+\item
+  \textbf{FR-2.9} The transfer shall be rejected with no ledger change if: the wallets are the same (422
+  \texttt{SAME\_\allowbreak{}WALLET}); either wallet doesn't exist or is a system account (404, FR-1.7); the currency
+  differs from either wallet's (422 \texttt{CURRENCY\_\allowbreak{}MISMATCH}); or the source balance is less than the
+  amount (422 \texttt{INSUFFICIENT\_\allowbreak{}FUNDS}). The checks run in this order, and the first failure is
+  returned.
+\item
+  \textbf{FR-2.10} The request fingerprint shall be a SHA-256 hash of the HTTP method, the path and the
+  canonical JSON body, so key order and whitespace do not matter.
+\end{itemize}
+
+\subsection{4.3 Concurrent Balance Mutability (FR-3)}\label{concurrent-balance-mutability-fr-3}
+
+\subsubsection{4.3.1 Description and Priority}\label{description-and-priority-2}
+
+\textbf{FR-3} (Concurrent Balance Mutability): The system shall safely handle multiple simultaneous
+incoming and outgoing transfers on the same wallet without race conditions or balance corruption.
+\textbf{Priority: High.}
+
+\subsubsection{4.3.2 Stimulus/Response Sequences}\label{stimulusresponse-sequences-2}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Wallet A holds 9000. Two clients each send A\ensuremath{\rightarrow}B 6000 at the same instant.
+\item
+  One request returns 201. The other waits for the first to commit, re-checks the funds, and
+  returns 422 \texttt{INSUFFICIENT\_\allowbreak{}FUNDS}.
+\item
+  Final A = 3000, B = 6000 more than before, and reconciliation is BALANCED.
+\end{enumerate}
+
+\subsubsection{4.3.3 Functional Requirements}\label{functional-requirements-2}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{FR-3.1} The outcome of any set of concurrent money-moving operations (deposits, transfers and
+  reversals) shall equal the outcome of some serial order of the same operations (serialisability
+  per wallet).
+\item
+  \textbf{FR-3.2} No sequence of concurrent requests shall make a user wallet's balance negative.
+\item
+  \textbf{FR-3.3} Concurrent operations on the same wallets, such as transfers in opposite directions
+  (A\ensuremath{\rightarrow}B and B\ensuremath{\rightarrow}A) or a reversal running beside a transfer, shall not deadlock. Every money-moving
+  operation shall take its wallet locks in one deterministic order (e.g.~ascending wallet ID).
+\item
+  \textbf{FR-3.4} If the database aborts a transaction for a serialisation failure or deadlock
+  (SQLSTATE 40001 / 40P01), the system shall retry it up to 3 times. After that it returns 503
+  \texttt{CONCURRENCY\_\allowbreak{}RETRY\_\allowbreak{}EXHAUSTED}.
+\item
+  \textbf{FR-3.5} Transfers that touch disjoint wallets shall not block each other.
+\end{itemize}
+
+\subsection{4.4 Immutable Audit Trail and Reversals (FR-4)}\label{immutable-audit-trail-and-reversals-fr-4}
+
+\subsubsection{4.4.1 Description and Priority}\label{description-and-priority-3}
+
+\textbf{FR-4} (Immutable Audit Trail): Ledger records cannot be updated or deleted once written. Any
+correction or cancellation shall be recorded as an explicit reversal transaction.
+\textbf{Priority: High} (FR-4.6: Medium).
+
+\subsubsection{4.4.2 Stimulus/Response Sequences}\label{stimulusresponse-sequences-3}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Admin \texttt{POST\ /\allowbreak{}transactions/\allowbreak{}\{id\}/\allowbreak{}reversals} with a valid \texttt{X-Admin-Token}, an Idempotency-Key and
+  a reason \ensuremath{\rightarrow} 201 with a new REVERSAL transaction whose entries mirror the original's.
+\item
+  Reversing the same transaction again \ensuremath{\rightarrow} 409 \texttt{ALREADY\_\allowbreak{}REVERSED}.
+\item
+  Any SQL \texttt{UPDATE}, \texttt{DELETE} or \texttt{TRUNCATE} on ledger tables (even by a developer at the psql
+  prompt) \ensuremath{\rightarrow} error raised by the database.
+\end{enumerate}
+
+\subsubsection{4.4.3 Functional Requirements}\label{functional-requirements-3}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{FR-4.1} The database shall reject every \texttt{UPDATE}, \texttt{DELETE} and \texttt{TRUNCATE} on the ledger
+  transaction and entry tables (e.g.~with triggers). This shall hold even for SQL that bypasses the
+  application. The application shall connect as a database role that does not own these tables,
+  so it cannot disable that protection. A superuser or the tables' owner can still disable it;
+  preventing that is outside the system's threat model. FR-4.6 and FR-5.5 detect the resulting
+  changes instead, except the deletion of a wallet's newest entries, which FR-4.6 cannot detect.
+\item
+  \textbf{FR-4.2} \texttt{POST\ /\allowbreak{}transactions/\allowbreak{}\{id\}/\allowbreak{}reversals} shall post a new transaction of type \texttt{REVERSAL}
+  that references the original and whose entries are the original's entries with their signs
+  flipped. The body has a required \texttt{reason} (1--255 characters). It requires a valid
+  \texttt{X-Admin-Token} (NFR-SEC-4), checked before anything else, and an Idempotency-Key (FR-2.2 to
+  FR-2.7 and FR-2.10 apply).
+\item
+  \textbf{FR-4.3} A transaction shall be reversible at most once, even under concurrent requests (409
+  \texttt{ALREADY\_\allowbreak{}REVERSED}, backed by a database constraint, NFR-DB-2). A reversal transaction shall not
+  itself be reversible (422 \texttt{CANNOT\_\allowbreak{}REVERSE\_\allowbreak{}REVERSAL}).
+\item
+  \textbf{FR-4.4} A reversal shall be rejected with 422 \texttt{INSUFFICIENT\_\allowbreak{}FUNDS} if it would make a user
+  wallet negative (e.g.~the recipient already spent the money). This check runs after those of
+  FR-4.3.
+\item
+  \textbf{FR-4.5} Every transaction shall record its type (\texttt{DEPOSIT}, \texttt{TRANSFER}, \texttt{REVERSAL}), creation
+  time (UTC), description or reason, and idempotency key. Every entry shall record the
+  transaction, wallet, signed amount and currency.
+\item
+  \textbf{FR-4.6} \emph{(Medium)} The ledger shall be tamper-evident. Each entry shall store an HMAC-SHA-256
+  of its own content, its transaction's content and the hash of the wallet's previous entry (a
+  per-wallet hash chain, ordered by a sequence number because timestamps can tie). The key comes
+  from the \texttt{LEDGER\_\allowbreak{}HMAC\_\allowbreak{}KEY} environment variable and is never stored in the database, so someone
+  with database access alone cannot rebuild the chain, and FR-5.5 detects any entry changed,
+  inserted or deleted out of band. The one exception is deleting a wallet's newest entries, which
+  would need a copy of the chain head outside the database (out of scope for 1.0). The service
+  shall refuse to start if the key is unset or empty, or if it differs from the key the ledger was
+  created with (checked against a stored HMAC of a fixed string; key rotation is out of scope for
+  1.0). A wallet's chain grows only under the wallet locks FR-3.3 already takes, so FR-3.5 still
+  holds. The chain format (each chain's starting value, the exact fields, their byte encoding and
+  the fixed string for the key check) is to be recorded in ADR-0008 and shall not change once
+  entries exist.
+\item
+  \textbf{FR-4.7} \texttt{GET\ /\allowbreak{}transactions/\allowbreak{}\{id\}} shall return the transaction (id, type, creation time,
+  description or reason, and the id of the transaction it reverses, if any) with all its entries.
+\end{itemize}
+
+\subsection{4.5 Ledger Reconciliation (FR-5)}\label{ledger-reconciliation-fr-5}
+
+\subsubsection{4.5.1 Description and Priority}\label{description-and-priority-4}
+
+\textbf{FR-5} (Ledger Reconciliation): An administrative endpoint shall scan the ledger entries and
+verify that the sum of credits equals the sum of debits, and that current wallet balances match
+the calculated ledger sums. \textbf{Priority: High} (FR-5.5: Medium).
+
+\subsubsection{4.5.2 Stimulus/Response Sequences}\label{stimulusresponse-sequences-4}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Admin \texttt{GET\ /\allowbreak{}admin/\allowbreak{}reconciliation} with a valid \texttt{X-Admin-Token} \ensuremath{\rightarrow} 200 report, \texttt{status:\ BALANCED}.
+\item
+  A DBA manually corrupts a cached balance \ensuremath{\rightarrow} the next report shows \texttt{status:\ DISCREPANCY} and lists
+  the wallet with its expected and actual balance.
+\item
+  Request without a valid token \ensuremath{\rightarrow} 401.
+\end{enumerate}
+
+\subsubsection{4.5.3 Functional Requirements}\label{functional-requirements-4}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{FR-5.1} \texttt{GET\ /\allowbreak{}admin/\allowbreak{}reconciliation} shall require a valid \texttt{X-Admin-Token} (NFR-SEC-4) and
+  shall not modify any data. All its checks shall read one consistent snapshot (e.g.~a single
+  read-only \texttt{REPEATABLE\ READ} transaction), so transfers committing during the scan cannot cause
+  false discrepancies.
+\item
+  \textbf{FR-5.2} It shall verify, per currency, that the sum of all entry amounts is zero (total
+  debits = total credits).
+\item
+  \textbf{FR-5.3} It shall verify that every transaction's entries sum to zero.
+\item
+  \textbf{FR-5.4} It shall verify that every wallet's stored balance equals the sum of its entries.
+\item
+  \textbf{FR-5.5} \emph{(Medium)} It shall verify every wallet's hash chain (FR-4.6).
+\item
+  \textbf{FR-5.6} The report shall contain: \texttt{status} (\texttt{BALANCED} \textbar{} \texttt{DISCREPANCY}), \texttt{checkedAt}, counts of
+  transactions, entries and wallets, per-currency debit and credit totals (both non-negative, and
+  equal when balanced), and a list of discrepancies (type, id, expected, actual).
+\end{itemize}
+
+\section{5. Other Nonfunctional Requirements}\label{other-nonfunctional-requirements}
+
+\subsection{5.1 Performance Requirements}\label{performance-requirements}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{NFR-PERF-1} On a developer laptop with local PostgreSQL, a transfer shall complete in under
+  200 ms at the 95th percentile with 20 concurrent clients using distinct wallet pairs.
+\item
+  \textbf{NFR-PERF-2} Reconciliation over 100,000 entries shall complete in under 5 seconds.
+\item
+  \textbf{NFR-PERF-3} Wallet balance reads shall not scan the ledger. They read the cached balance kept
+  consistent by NFR-INT-4.
+\end{itemize}
+
+\subsection{5.2 Safety Requirements}\label{safety-requirements}
+
+Here, ``safety'' means preventing financial loss or corruption.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{NFR-INT-1} Every ledger transaction shall balance: its entries sum to zero per currency.
+  Unbalanced transactions shall be rejected before they are written.
+\item
+  \textbf{NFR-INT-2} All monetary amounts shall be integers in the currency's minor unit (\texttt{long} in
+  Java, \texttt{BIGINT} in SQL, integer in JSON). Floating-point types shall not be used for money
+  anywhere (TQ-6).
+\item
+  \textbf{NFR-INT-3} Ledger tables shall be append-only, enforced by the database (FR-4.1).
+\item
+  \textbf{NFR-INT-4} A wallet's cached balance and its ledger entries shall be written in the same
+  database transaction. After any commit, balance = \ensuremath{\Sigma} entries.
+\item
+  \textbf{NFR-INT-5} User wallet balances shall never be negative. A database \texttt{CHECK} constraint shall
+  back up the application check.
+\item
+  \textbf{NFR-CON-1} Concurrency control shall use database row-level locking or serialisable
+  transactions. Application-level read-modify-write of balances without a lock is forbidden.
+\item
+  \textbf{NFR-REL-1} Any error that aborts a money-moving operation (a 5xx response) shall roll back all
+  of its writes (ledger entries, balances and idempotency record). Partial transfers shall be
+  impossible.
+\item
+  \textbf{NFR-REL-2} Idempotency records and ledger data shall survive application restarts (they are
+  persisted in PostgreSQL).
+\end{itemize}
+
+\subsection{5.3 Security Requirements}\label{security-requirements}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{NFR-SEC-1} All API inputs (path IDs, query parameters, headers, bodies) shall be validated.
+  Malformed UUIDs, unknown JSON fields, wrong types and out-of-range values return 400 with a
+  problem response.
+\item
+  \textbf{NFR-SEC-2} Amounts shall be integers from 1 to 10\textsuperscript{12} minor units (\texttt{1\ \ensuremath{\le}\ amountMinor\ \ensuremath{\le}\ 10\textsuperscript{12}}).
+  Zero, negative, fractional, non-numeric and larger amounts return 400. This prevents balance
+  inflation through negative transfers and keeps each request amount exact in JavaScript clients.
+  Balance arithmetic shall be overflow-checked, so an overflow aborts the operation with a 500
+  error instead of wrapping.
+\item
+  \textbf{NFR-SEC-3} No secrets shall be committed. CI shall run secret scanning on every push and PR.
+  Configuration secrets come from environment variables.
+\item
+  \textbf{NFR-SEC-4} Administrative endpoints shall require an \texttt{X-Admin-Token} header matching the
+  \texttt{ADMIN\_\allowbreak{}TOKEN} environment variable, compared in constant time. A missing or invalid token returns
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \setcounter{enumi}{400}
+  \tightlist
+  \item
+    If \texttt{ADMIN\_\allowbreak{}TOKEN} is unset or empty, every admin request is rejected (fail closed).
+  \end{enumerate}
+\item
+  \textbf{NFR-SEC-5} Error responses shall not expose stack traces, SQL or internal class names.
+\item
+  \textbf{NFR-SEC-6} All SQL shall use bound parameters. String concatenation of user input into SQL is
+  forbidden.
+\end{itemize}
+
+\subsection{5.4 Software Quality Attributes}\label{software-quality-attributes}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{NFR-MNT-1} Layered architecture (\texttt{api} \ensuremath{\rightarrow} \texttt{service} \ensuremath{\rightarrow} \texttt{domain}/\texttt{repository}). Business logic
+  never depends on HTTP or SQL details directly. Persistence, clock and ID generation sit behind
+  interfaces (SE-6).
+\item
+  \textbf{NFR-MNT-2} Code style is enforced automatically (Spotless / google-java-format), and CI fails
+  on violations.
+\item
+  \textbf{NFR-MNT-3} Line coverage of \texttt{domain} and \texttt{service} packages shall be at least 80\% (measured
+  from Stage 3).
+\item
+  \textbf{NFR-MNT-4} Schema changes happen only through new versioned Flyway migrations. Merged
+  migrations are never edited.
+\item
+  \textbf{NFR-OBS-1} The service shall expose \texttt{GET\ /\allowbreak{}actuator/\allowbreak{}health}, reporting UP only when the
+  database is reachable.
+\item
+  \textbf{NFR-OBS-2} Every money-moving request shall be logged with its transaction id (if any), type
+  and outcome. Logs shall not contain secrets or full request bodies.
+\item
+  \textbf{NFR-PORT-1} The project shall build, test and run on macOS, Linux and Windows with only a JDK
+  21+ and Docker installed (\texttt{./\allowbreak{}mvnw} provides Maven). For this, local runs and tests use a fixed,
+  non-secret \texttt{LEDGER\_\allowbreak{}HMAC\_\allowbreak{}KEY} that the project provides (FR-4.6); every other environment sets
+  its own key.
+\item
+  \textbf{NFR-USE-1} Errors shall use RFC 9457 problem details with a stable \texttt{code} field (e.g.
+  \texttt{INSUFFICIENT\_\allowbreak{}FUNDS}), so clients can branch on it. Where section 4 names no code, invalid input
+  returns 400 \texttt{VALIDATION\_\allowbreak{}FAILED}, an unknown user, wallet or transaction returns 404
+  \texttt{USER\_\allowbreak{}NOT\_\allowbreak{}FOUND}, \texttt{WALLET\_\allowbreak{}NOT\_\allowbreak{}FOUND} or \texttt{TRANSACTION\_\allowbreak{}NOT\_\allowbreak{}FOUND}, a missing or invalid admin token
+  returns 401 \texttt{ADMIN\_\allowbreak{}TOKEN\_\allowbreak{}INVALID}, and an unexpected server error returns 500 \texttt{INTERNAL\_\allowbreak{}ERROR}.
+\item
+  \textbf{NFR-DOC-1} The OpenAPI contract shall be kept in sync with the implemented endpoints. CI shall
+  fail if they drift (from Stage 3, TBD-4).
+\item
+  \textbf{NFR-DOC-2} On every pull request, CI shall validate the brain notes (frontmatter schema and
+  wikilinks) and check that every ADR cites at least one brain note (SB-3).
+\end{itemize}
+
+\subsection{5.5 Business Rules}\label{business-rules}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{BR-1} Money cannot be created or destroyed. It moves only between accounts through balanced
+  transactions.
+\item
+  \textbf{BR-2} Only system funding accounts may hold negative balances.
+\item
+  \textbf{BR-3} A transfer is in a single currency. Both wallets must hold that currency.
+\item
+  \textbf{BR-4} History is never rewritten. A mistake is corrected with a reversal, and the original
+  stays visible.
+\item
+  \textbf{BR-5} Only administrators may reverse transactions or run reconciliation.
+\end{itemize}
+
+\section{6. Other Requirements}\label{other-requirements}
+
+\subsection{6.1 Database Requirements}\label{database-requirements}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{NFR-DB-1} PostgreSQL 17. Tables: \texttt{users}, \texttt{wallets}, \texttt{ledger\_\allowbreak{}transactions}, \texttt{ledger\_\allowbreak{}entries},
+  \texttt{idempotency\_\allowbreak{}keys} and \texttt{ledger\_\allowbreak{}metadata} (to be detailed in the Stage 2 ER diagram).
+  \texttt{ledger\_\allowbreak{}metadata} holds the HMAC key check value (FR-4.6). System funding accounts (FR-1.7) are
+  rows in \texttt{wallets} with no owner (\texttt{user\_\allowbreak{}id} is NULL).
+\item
+  \textbf{NFR-DB-2} Integrity constraints in the database, not only in code: foreign keys; \texttt{UNIQUE\ NULLS\ NOT\ DISTINCT\ (user\_\allowbreak{}id,\ currency)} on wallets (one wallet per user per currency, and one system
+  account per currency); \texttt{UNIQUE\ (id,\ currency)} on wallets, referenced by a foreign key on
+  entries' \texttt{(wallet\_\allowbreak{}id,\ currency)}, so an entry's currency always matches its wallet's; \texttt{CHECK\ (amount\_\allowbreak{}minor\ \textless{}\textgreater{}\ 0)} on entries; \texttt{CHECK\ (user\_\allowbreak{}id\ IS\ NULL\ OR\ balance\_\allowbreak{}minor\ \textgreater{}=\ 0)} on wallets; a
+  unique index on \texttt{lower(email)} on users (FR-1.1); and \texttt{UNIQUE} on the reversed-transaction
+  reference (FR-4.3).
+\item
+  \textbf{NFR-DB-3} Tests run against an isolated, throwaway PostgreSQL instance (Testcontainers),
+  never a shared database (TQ-5).
+\end{itemize}
+
+\subsection{6.2 Agent Skill Requirements}\label{agent-skill-requirements}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{SK-1 brain-ingest}: add a source to the brain as a distilled, linked note in \texttt{brain/\allowbreak{}inbox/\allowbreak{}}
+  and log the run.
+\item
+  \textbf{SK-2 brain-refine}: file inbox notes into PARA, merge duplicates, fix links, update MOCs and
+  log.
+\item
+  \textbf{SK-3 brain-query}: answer questions and draft documents (SRS, ADRs) from brain notes, citing
+  them with wikilinks.
+\item
+  \textbf{SK-4 local-check}: build, run the tests, start the server, call one read-only endpoint, and
+  report PASS/FAIL per step.
+\item
+  \textbf{SK-5 simulate-transfer}: create two users with one wallet each and fund the first with a
+  deposit (new wallets start at 0, FR-1.3), record balances, make an idempotent transfer and replay
+  it, fire two concurrent transfers with different idempotency keys that the source balance covers
+  one at a time but not together (as in 4.3.2), reconcile (reading \texttt{ADMIN\_\allowbreak{}TOKEN} from the
+  environment), and summarise. It reports PASS only if the replay moved no money, exactly one
+  concurrent transfer succeeded, neither wallet went negative, and reconciliation is \texttt{BALANCED}.
+\item
+  \textbf{SK-6} Every skill shall conform to the Agent Skills specification (name = folder, valid
+  frontmatter). CI validates this on every PR.
+\item
+  \textbf{SK-7} Every skill shall cite at least one brain note (SB-3).
+\item
+  \textbf{SK-8} Skill evaluations shall run before each stage submission, with results recorded in
+  \texttt{docs/\allowbreak{}testing.md} (TQ-7).
+\end{itemize}
+
+\subsection{6.3 Testing and Quality Requirements (from the brief and the SDLC document)}\label{testing-and-quality-requirements-from-the-brief-and-the-sdlc-document}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{TQ-1} Unit tests for accounting calculations, ledger balance assertions and idempotency key
+  hashing.
+\item
+  \textbf{TQ-2} Integration tests for database transactions and rollback on simulated transfer failures.
+\item
+  \textbf{TQ-3} System (end-to-end) tests for each of FR-1 to FR-5.
+\item
+  \textbf{TQ-4} Negative tests: negative balance attempts, insufficient funds, invalid idempotency
+  payloads, malformed IDs, and simultaneous concurrent transfers (race safety).
+\item
+  \textbf{TQ-5} CI tests run against an isolated test database on every push.
+\item
+  \textbf{TQ-6} Tests prove that money is handled as integer minor units, with no floating-point
+  rounding.
+\item
+  \textbf{TQ-7} Skill evaluations run before each stage submission and are recorded.
+\item
+  \textbf{TQ-8} Tests are maintained as the system changes. Each significant defect gets a regression
+  test.
+\item
+  \textbf{TQ-9} Security tests (the brief's unnumbered ``Security Testing'' item): every API parameter is
+  validated (NFR-SEC-1), and negative, zero and oversized amounts are rejected without changing any
+  balance (NFR-SEC-2).
+\end{itemize}
+
+\section{Appendix A: Glossary}\label{appendix-a-glossary}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.8000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Term
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Definition
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{ACID} & Atomicity, Consistency, Isolation, Durability: guarantees of a database transaction \\
+\textbf{ADR} & Architecture Decision Record. A short document recording one significant decision \\
+\textbf{Credit} & A positive entry: money into an account, from the account holder's view \\
+\textbf{Debit} & A negative entry: money out of an account, from the account holder's view \\
+\textbf{Double-entry} & Bookkeeping in which every transaction has entries that sum to zero (debits = credits) \\
+\textbf{Entry} & One signed amount posted to one account as part of a transaction \\
+\textbf{HMAC} & Hash-based message authentication code: a hash keyed with a secret, so only holders of the key can compute it (FR-4.6) \\
+\textbf{Idempotency key} & A client-generated unique token that makes retrying a request safe \\
+\textbf{Ledger transaction} & An atomic group of balanced entries (deposit, transfer or reversal) \\
+\textbf{Minor unit} & The smallest unit of a currency (paise for INR, cents for USD) \\
+\textbf{Reconciliation} & Recomputing balances from the ledger and comparing them with stored values \\
+\textbf{Reversal} & A new transaction that cancels an earlier one by mirroring its entries \\
+\textbf{System account} & An internal account (not user-owned) used as the source of deposited money \\
+\textbf{MVCC} & Multi-Version Concurrency Control, PostgreSQL's concurrency model \\
+\textbf{PARA} & Projects / Areas / Resources / Archive: how the brain vault is organised \\
+\textbf{SKILL.md} & Instruction file defining an Agent Skill for AI coding agents \\
+\end{longtable}
+}
+
+\section{Appendix B: Analysis Models}\label{appendix-b-analysis-models}
+
+Preliminary conceptual data model (the full ER and sequence diagrams are a Stage 2 deliverable in
+\texttt{docs/\allowbreak{}architecture.md}):
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+    entity/.style={draw, thick, minimum width=2.4cm, minimum height=0.9cm, inner xsep=8pt, font=\small\bfseries,
+      fill=white},
+    mult/.style={font=\footnotesize, inner sep=2pt},
+    rel/.style={font=\footnotesize\itshape, inner sep=2pt}]
+  \node[entity] (user)   at (0,0)       {USER};
+  \node[entity] (wallet) at (5.0,0)     {WALLET};
+  \node[entity] (entry)  at (10.6,0)    {LEDGER\_ENTRY};
+  \node[entity] (tx)     at (10.6,-3.6) {LEDGER\_TRANSACTION};
+  \node[entity] (key)    at (3.6,-3.6)  {IDEMPOTENCY\_KEY};
+  \draw (user) -- node[rel, above] {owns}
+    node[mult, below, pos=0.12] {0..1} node[mult, below, pos=0.86] {0..*} (wallet);
+  \draw (wallet) -- node[rel, above] {posted to}
+    node[mult, below, pos=0.12] {1} node[mult, below, pos=0.86] {0..*} (entry);
+  \draw (tx) -- node[rel, right] {consists of (sum = 0)}
+    node[mult, left, pos=0.15] {1} node[mult, left, pos=0.85] {1..*} (entry);
+  \draw (key) -- node[rel, above] {result of}
+    node[mult, below, pos=0.12] {0..1} node[mult, below, pos=0.86] {0..1} (tx);
+  \draw ($(tx.south)+(1.0,0)$) -- ++(0,-0.9) -| node[rel, below=1.5pt, pos=0.25] {reverses} ($(tx.south)+(-1.0,0)$);
+  \node[mult, anchor=south west] at ($(tx.south)+(1.05,-0.45)$) {0..1};
+  \node[mult, anchor=south east] at ($(tx.south)+(-1.05,-0.45)$) {0..1};
+\end{tikzpicture}
+\caption{Preliminary conceptual data model (multiplicities in UML notation).}
+\label{fig:er}
+\end{figure}
+
+Transaction state is simple: a ledger transaction is either \textbf{posted} (and immutable) or never
+existed. There is no pending state in release 1.0, and a reversal is a separate posted transaction.
+
+\section{Appendix C: To Be Determined List}\label{appendix-c-to-be-determined-list}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0833}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.7083}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1042}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1042}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+ID
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Item
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Owner
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Due
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+TBD-1 & End-user authentication. \textbf{Closed (v0.2):} none in release 1.0; clients are trusted (2.3) & \emph{team} & Closed \\
+TBD-2 & Ledger sign convention. \textbf{Closed (v0.2):} signed amounts from the holder's view, negative = debit and positive = credit (Appendix A), to be recorded in ADR-0005 & \emph{team} & Closed \\
+TBD-3 & Deployment target beyond local (Docker image only? hosted demo?) & \emph{team} & Stage 3 \\
+TBD-4 & OpenAPI: hand-written contract vs.~generated by springdoc, and how CI detects drift & \emph{team} & Stage 2 \\
+TBD-5 & Scope of the FR-4.6 hash chain. \textbf{Closed (v0.2):} in scope for 1.0, because the brief requires a tamper-evident ledger & \emph{team} & Closed \\
+TBD-6 & Team member names on the cover page. \textbf{Closed (v0.2):} names added; GitHub handles live in \texttt{README.md} & \emph{team} & Closed \\
+\end{longtable}
+}
+
+\end{document}

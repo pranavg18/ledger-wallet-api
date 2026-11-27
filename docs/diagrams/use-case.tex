@@ -1,0 +1,72 @@
+% UML use case diagram for SRS section 2.2 (the same picture is Figure 2 in docs/srs.tex).
+% Build the SVG used by docs/srs.md from the repo root:
+%   tectonic docs/diagrams/use-case.tex && pdftocairo -svg docs/diagrams/use-case.pdf docs/diagrams/use-case.svg
+\documentclass[tikz,border=0pt]{standalone}
+\usepackage{newtxtext}
+\usetikzlibrary{shapes.geometric,arrows.meta,calc,backgrounds}
+\begin{document}
+% White background so the SVG stays readable in dark mode
+\begin{tikzpicture}[show background rectangle, inner frame sep=8pt,
+    background rectangle/.style={fill=white, draw=none},
+    font=\small,
+    usecase/.style={ellipse, draw, minimum width=3.9cm, minimum height=0.95cm, inner sep=1pt,
+      align=center, fill=white},
+    assoc/.style={draw},
+    generalize/.style={draw, -{Triangle[open, length=3mm, width=3mm]}},
+    stereo/.style={font=\scriptsize, fill=white, inner sep=1pt},
+    actor/.pic={
+      \draw[thick] (0,0.55) circle (0.22);
+      \draw[thick] (0,0.33) -- (0,-0.25);
+      \draw[thick] (-0.35,0.12) -- (0.35,0.12);
+      \draw[thick] (0,-0.25) -- (-0.28,-0.72) (0,-0.25) -- (0.28,-0.72);
+    }]
+
+  % System boundary
+  \draw[thick] (2.3,0.75) rectangle (13.0,-15.0);
+  \node[anchor=north, font=\bfseries] at (7.65,0.7) {Ledger Wallet API};
+
+  % Actors
+  \pic at (0.6,-4.4) {actor};
+  \node[align=center] (clientlabel) at (0.6,-5.55) {API client /\\wallet user};
+  \pic at (0.6,-11.8) {actor};
+  \node[align=center] (adminlabel) at (0.6,-12.95) {Administrator /\\auditor};
+  \pic at (14.6,-14.0) {actor};
+  \node[align=center] at (14.6,-15.15) {Developer /\\AI agent};
+
+  % Use cases: API client
+  \node[usecase] (create-user)   at (5.5,-0.75) {Create user\\[-2pt]\scriptsize (FR-1.1)};
+  \node[usecase] (create-wallet) at (5.5,-2.0)  {Create wallet\\[-2pt]\scriptsize (FR-1.2)};
+  \node[usecase] (view-wallet)   at (5.5,-3.25) {View wallet and balance\\[-2pt]\scriptsize (FR-1.4)};
+  \node[usecase] (statement)     at (5.5,-4.5)  {View statement\\[-2pt]\scriptsize (FR-1.5)};
+  \node[usecase] (view-tx)       at (5.5,-5.75) {View transaction\\[-2pt]\scriptsize (FR-4.7)};
+  \node[usecase] (deposit)       at (5.5,-7.0)  {Deposit funds\\[-2pt]\scriptsize (FR-1.6)};
+  \node[usecase] (transfer)      at (5.5,-8.25) {Transfer funds\\[-2pt]\scriptsize (FR-2)};
+
+  % Use cases: administrator only
+  \node[usecase] (reverse)       at (5.5,-11.0) {Reverse transaction\\[-2pt]\scriptsize (FR-4.2)};
+  \node[usecase] (reconcile)     at (5.5,-12.7) {Run reconciliation\\[-2pt]\scriptsize (FR-5)};
+
+  % Included and other use cases
+  \node[usecase] (idempotency)   at (10.5,-9.4)  {Apply idempotency key\\[-2pt]\scriptsize (FR-2.2 to FR-2.7)};
+  \node[usecase] (token)         at (10.5,-12.2) {Verify admin token\\[-2pt]\scriptsize (NFR-SEC-4)};
+  \node[usecase] (health)        at (10.5,-14.0) {Check service health\\[-2pt]\scriptsize (NFR-OBS-1)};
+
+  % Associations
+  \foreach \uc in {create-user, create-wallet, view-wallet, statement, view-tx, deposit, transfer}
+    \draw[assoc] (1.0,-4.3) -- (\uc.west);
+  \foreach \uc in {reverse, reconcile}
+    \draw[assoc] (1.0,-11.7) -- (\uc.west);
+  \draw[assoc] (14.2,-13.9) -- (health.east);
+
+  % An administrator can do everything an API client can
+  \draw[generalize] (0.6,-11.0) -- (clientlabel.south);
+
+  % Include relationships (dashed line, solid open arrowhead)
+  \foreach \from/\to in {deposit.east/idempotency.north west, transfer.east/idempotency.west,
+      reverse.north east/idempotency.south west, reverse.east/token.north west,
+      reconcile.east/token.west} {
+    \draw[dashed] (\from) -- node[stereo, sloped, pos=0.45] {\guillemotleft include\guillemotright} (\to);
+    \draw[-{To[length=2.2mm]}] ($(\to)!1.5mm!(\from)$) -- (\to);
+  }
+\end{tikzpicture}
+\end{document}

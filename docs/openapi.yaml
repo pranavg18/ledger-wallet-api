@@ -1,0 +1,331 @@
+openapi: 3.1.0
+info:
+  title: Ledger Wallet API
+  version: 0.1.0-draft
+  description: |
+    Digital wallets backed by an append-only double-entry ledger.
+    DRAFT contract (Stage 1). Finalised in Stage 2 (task T2.12); requirement IDs refer to docs/srs.md.
+    All amounts are integers in currency minor units (e.g. paise). Errors use RFC 9457 problem details.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: users
+  - name: wallets
+  - name: money-movement
+  - name: admin
+
+paths:
+  /api/v1/users:
+    post:
+      tags: [users]
+      summary: Create a user (FR-1.1)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUserRequest' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+
+  /api/v1/users/{userId}/wallets:
+    post:
+      tags: [wallets]
+      summary: Create a wallet in a currency (FR-1.2)
+      parameters: [{ $ref: '#/components/parameters/UserId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateWalletRequest' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Wallet' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+
+  /api/v1/wallets/{walletId}:
+    get:
+      tags: [wallets]
+      summary: Get a wallet and its balance (FR-1.4)
+      parameters: [{ $ref: '#/components/parameters/WalletId' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Wallet' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+
+  /api/v1/wallets/{walletId}/entries:
+    get:
+      tags: [wallets]
+      summary: List a wallet's ledger entries, newest first (FR-1.5)
+      parameters:
+        - { $ref: '#/components/parameters/WalletId' }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Entry' } }
+                  nextCursor: { type: [string, 'null'] }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+
+  /api/v1/deposits:
+    post:
+      tags: [money-movement]
+      summary: Fund a wallet from the system funding account (FR-1.6)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DepositRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/TransactionCreated' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+
+  /api/v1/transfers:
+    post:
+      tags: [money-movement]
+      summary: Transfer between two wallets (FR-2, FR-3)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransferRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/TransactionCreated' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+        '503': { $ref: '#/components/responses/Problem' }
+
+  /api/v1/transactions/{transactionId}:
+    get:
+      tags: [money-movement]
+      summary: Get a ledger transaction with its entries
+      parameters: [{ $ref: '#/components/parameters/TransactionId' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Transaction' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+
+  /api/v1/transactions/{transactionId}/reversals:
+    post:
+      tags: [money-movement]
+      summary: Reverse a transaction (FR-4.2 – FR-4.4, admin only per BR-5)
+      security: [{ AdminToken: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/TransactionId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 1, maxLength: 255 }
+      responses:
+        '201': { $ref: '#/components/responses/TransactionCreated' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+
+  /api/v1/admin/reconciliation:
+    get:
+      tags: [admin]
+      summary: Verify the ledger balances and cached balances match (FR-5)
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { description: Report, content: { application/json: { schema: { $ref: '#/components/schemas/ReconciliationReport' } } } }
+        '401': { $ref: '#/components/responses/Problem' }
+
+  /actuator/health:
+    get:
+      tags: [admin]
+      summary: Liveness/readiness including database (NFR-OBS-1)
+      responses:
+        '200':
+          description: UP
+          content:
+            application/json:
+              schema: { type: object, properties: { status: { type: string, enum: [UP, DOWN] } } }
+
+components:
+  securitySchemes:
+    AdminToken: { type: apiKey, in: header, name: X-Admin-Token }
+
+  parameters:
+    UserId: { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+    WalletId: { name: walletId, in: path, required: true, schema: { type: string, format: uuid } }
+    TransactionId: { name: transactionId, in: path, required: true, schema: { type: string, format: uuid } }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Unique per logical operation; reuse it for retries (FR-2.2). UUID v4 recommended.
+      schema: { type: string, minLength: 1, maxLength: 255, pattern: '^[\x21-\x7E]+$' }
+
+  responses:
+    Problem:
+      description: Error (RFC 9457)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    TransactionCreated:
+      description: Created, or a replay of the original response
+      headers:
+        Idempotent-Replayed:
+          description: Present and "true" when the stored response was replayed (FR-2.3)
+          schema: { type: string, enum: ['true'] }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Transaction' }
+
+  schemas:
+    AmountMinor:
+      type: integer
+      format: int64
+      minimum: 1
+      maximum: 1000000000000
+      description: Positive amount in currency minor units, at most 10^12; decimals and strings are rejected (NFR-SEC-2, TQ-6)
+    Currency:
+      type: string
+      pattern: '^[A-Z]{3}$'
+      description: ISO 4217 code
+      examples: [INR]
+
+    CreateUserRequest:
+      type: object
+      additionalProperties: false
+      required: [name, email]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        email: { type: string, format: email, maxLength: 254, description: "Trimmed; unique ignoring case (FR-1.1)" }
+    User:
+      type: object
+      required: [id, name, email, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        createdAt: { type: string, format: date-time }
+
+    CreateWalletRequest:
+      type: object
+      additionalProperties: false
+      required: [currency]
+      properties:
+        currency: { $ref: '#/components/schemas/Currency' }
+    Wallet:
+      type: object
+      required: [id, userId, currency, balanceMinor, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        currency: { $ref: '#/components/schemas/Currency' }
+        balanceMinor: { type: integer, format: int64, minimum: 0 }
+        createdAt: { type: string, format: date-time }
+
+    DepositRequest:
+      type: object
+      additionalProperties: false
+      required: [walletId, amountMinor, currency]
+      properties:
+        walletId: { type: string, format: uuid }
+        amountMinor: { $ref: '#/components/schemas/AmountMinor' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        description: { type: string, maxLength: 255 }
+    TransferRequest:
+      type: object
+      additionalProperties: false
+      required: [sourceWalletId, destinationWalletId, amountMinor, currency]
+      properties:
+        sourceWalletId: { type: string, format: uuid }
+        destinationWalletId: { type: string, format: uuid }
+        amountMinor: { $ref: '#/components/schemas/AmountMinor' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        description: { type: string, maxLength: 255 }
+
+    Entry:
+      type: object
+      required: [id, transactionId, walletId, systemAccount, amountMinor, currency, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        transactionId: { type: string, format: uuid }
+        walletId: { type: string, format: uuid }
+        systemAccount: { type: boolean, description: 'True on the system funding account side; that walletId returns 404 by design (FR-1.7)' }
+        amountMinor: { type: integer, format: int64, description: 'Signed: negative = money out, positive = money in (TBD-2)' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        createdAt: { type: string, format: date-time }
+    Transaction:
+      type: object
+      required: [id, type, entries, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [DEPOSIT, TRANSFER, REVERSAL] }
+        description: { type: [string, 'null'] }
+        reversesTransactionId: { type: [string, 'null'], format: uuid }
+        entries: { type: array, minItems: 2, items: { $ref: '#/components/schemas/Entry' } }
+        createdAt: { type: string, format: date-time }
+
+    ReconciliationReport:
+      type: object
+      required: [status, checkedAt, counts, totals, discrepancies]
+      properties:
+        status: { type: string, enum: [BALANCED, DISCREPANCY] }
+        checkedAt: { type: string, format: date-time }
+        counts:
+          type: object
+          properties:
+            transactions: { type: integer }
+            entries: { type: integer }
+            wallets: { type: integer }
+        totals:
+          type: array
+          items:
+            type: object
+            properties:
+              currency: { $ref: '#/components/schemas/Currency' }
+              debitsMinor: { type: integer, format: int64 }
+              creditsMinor: { type: integer, format: int64 }
+        discrepancies:
+          type: array
+          items:
+            type: object
+            properties:
+              type: { type: string, enum: [UNBALANCED_TRANSACTION, BALANCE_MISMATCH, CURRENCY_NOT_ZERO, HASH_CHAIN_BROKEN] }
+              id: { type: string }
+              expectedMinor: { type: integer, format: int64 }
+              actualMinor: { type: integer, format: int64 }
+
+    Problem:
+      type: object
+      description: RFC 9457 problem details with a stable machine-readable code (NFR-USE-1)
+      required: [title, status, code]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        code:
+          type: string
+          examples: [INSUFFICIENT_FUNDS, IDEMPOTENCY_KEY_MISSING, IDEMPOTENCY_KEY_REUSED, CURRENCY_MISMATCH, VALIDATION_FAILED]
