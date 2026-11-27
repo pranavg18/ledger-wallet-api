@@ -79,7 +79,10 @@ results row per stage.
 
 | Date | Stage | Skill | Prompt # | Result | Notes / evaluator |
 |---|---|---|---|---|---|
-| | 1 | brain-ingest | 1–3 | | |
+| 2026-11-27 | 1 | brain-ingest | 1 | PASS (Codex dry run) | Extended [[postgresql-concurrency-control]] for FR-3, added the PostgreSQL 17 source, and logged the run. The validator passed with 15 notes and no duplicate. |
+| 2026-11-27 | 1 | brain-ingest | 2 | PASS (Codex dry run) | Created a temporary RFC 9457 inbox note with `NFR-USE-1`, a source and a wikilink. Logged the run. The validator passed with 16 notes. |
+| 2026-11-27 | 1 | brain-ingest | 3 | PASS (Codex dry run) | The [IEEE Xplore test source](https://ieeexplore.ieee.org/document/1137968) was inaccessible. Only the run log changed. The note count stayed at 16 and the validator passed. |
+| | 1 | brain-ingest | 1–3 | Pending | Run in Claude Code before the Stage 1 submission. The dry runs used a disposable copy of the vault. |
 
 ## 5. Defect log (TQ-8)
 
