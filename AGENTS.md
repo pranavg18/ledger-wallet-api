@@ -22,7 +22,8 @@ Testcontainers**. See [`docs/adr/`](docs/adr/) for why.
 | Format code (fix lint) | `./mvnw spotless:apply` |
 | Run the API locally | `./mvnw spring-boot:run` (auto-starts PostgreSQL from `compose.yaml`) |
 | Health check | `curl -s localhost:8080/actuator/health` |
-| Validate skills | `python3 scripts/validate_skills.py` |
+| Validate skills | `python3 scripts/validate_skills.py` (needs PyYAML: `pip install -r scripts/requirements.txt`) |
+| Test the validators | `python3 -m unittest discover -s scripts/tests` |
 | Validate brain notes | `python3 scripts/validate_brain.py` |
 | Export the SRS to `docs/srs.tex` and `docs/srs.pdf` | `python3 scripts/export_srs.py` (needs `pandoc` and `tectonic`) |
 

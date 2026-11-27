@@ -8,15 +8,23 @@ Spec (https://agentskills.io/specification):
   - compatibility: optional, <= 500 chars
   - metadata: optional map of string -> string
   - only the known top-level fields are allowed
+  - the frontmatter is valid YAML (parsed with PyYAML, so e.g. an unquoted value containing ': ' fails)
 Project rules:
   - the body cites at least one brain note with a [[wikilink]] that resolves (SB-3, SK-7)
   - the required skills from the SRS exist (SK-1 .. SK-5)
+
+Needs PyYAML: pip install -r scripts/requirements.txt
 """
 
 import re
 import sys
 
-from brainlib import ROOT, brain_notes, parse_frontmatter, rel, resolves, split_frontmatter, wikilinks
+try:
+    import yaml
+except ImportError:
+    sys.exit("validate_skills.py needs PyYAML: pip install -r scripts/requirements.txt")
+
+from brainlib import ROOT, brain_notes, rel, resolves, split_frontmatter, wikilinks
 
 SKILLS_DIR = ROOT / ".claude" / "skills"
 REQUIRED_SKILLS = {"brain-ingest", "brain-refine", "brain-query", "local-check", "simulate-transfer"}
@@ -31,9 +39,11 @@ def validate(skill_md, notes):
     if fm_text is None:
         return ["missing YAML frontmatter (must start with '---')"]
     try:
-        fm = parse_frontmatter(fm_text)
-    except ValueError as e:
-        return [f"invalid frontmatter: {e}"]
+        fm = yaml.safe_load(fm_text)
+    except yaml.YAMLError as e:
+        return [f"frontmatter is not valid YAML: {' '.join(str(e).split())}"]
+    if not isinstance(fm, dict):
+        return ["frontmatter must be a YAML mapping of fields"]
 
     unknown = set(fm) - ALLOWED_FIELDS
     if unknown:

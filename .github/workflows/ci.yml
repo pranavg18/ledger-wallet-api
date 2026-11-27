@@ -83,6 +83,17 @@ jobs:
             echo "::error::Course/binary documents must not be committed:"; echo "$tracked"; exit 1
           fi
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install validator dependencies (PyYAML)
+        run: python3 -m pip install -r scripts/requirements.txt
+
+      - name: Test the validators
+        run: python3 -m unittest discover -s scripts/tests -v
+
       - name: Validate Agent Skills (SKILL.md frontmatter, naming, citations)
         run: python3 scripts/validate_skills.py
 

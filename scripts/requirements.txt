@@ -1,0 +1,2 @@
+# Python packages the repository validators need (pip install -r scripts/requirements.txt)
+PyYAML==6.0.2
