@@ -55,7 +55,7 @@ Spotless (google-java-format) · GitHub Actions. Rationale: [`docs/adr/`](docs/a
 | Member | GitHub | Primary area |
 |---|---|---|
 | Pranav Goyal | `@TBD` | R3: integrity, reconciliation and API safety |
-| Aprajita Agarwal | `@TBD` | R1: ledger core and persistence |
+| Aprajita Agarwal | `@apps05` | R1: ledger core and persistence |
 | Rudra Hardik Shroff | `@TBD` | R2: money movement and concurrency |
 | Tanuj Hardikkumar Shah | `@TanujShah18` | R4: quality, CI, docs and releases |
 
