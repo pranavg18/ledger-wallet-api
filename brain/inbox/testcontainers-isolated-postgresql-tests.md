@@ -29,3 +29,4 @@ sources: [https://java.testcontainers.org/modules/databases/postgres/]
 - Run integration tests via `./mvnw verify` in CI on each push (TQ-5). Design fixtures so tests remain independent when they share a container within a suite.
 - Use separate real database transactions for concurrency and rollback tests so a test-wide transaction does not hide application commit behavior.
 - For a rollback test, inject a failure after the first ledger insert. Read the database from a fresh transaction and check that both wallet balances are unchanged and that no ledger entry or idempotency record survived (TQ-2).
+- Give each test its own wallet IDs and funding fixtures. A disposable container isolates the CI run from other environments, and fresh fixtures keep tests within that run from depending on execution order (TQ-5).

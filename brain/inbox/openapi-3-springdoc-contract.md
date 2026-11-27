@@ -29,3 +29,4 @@ sources: [https://springdoc.org/]
 - Define the Stage 3 drift check around client-visible behavior. Compare paths, methods, required headers, request and response schemas, and status codes. Ignore formatting and ordering differences when they have no effect on clients (NFR-DOC-1).
 - Explicitly document RFC 9457 error bodies and Ledger Wallet's stable `code` extension, along with idempotency headers and the admin token where the SRS requires them (NFR-USE-1).
 - The drift check should fail if the generated transfer description marks `Idempotency-Key` optional. FR-2.2 requires the API to reject transfers that omit it.
+- Pair the contract check with an HTTP test that omits the header and asserts HTTP `400` with `IDEMPOTENCY_KEY_MISSING`. The contract check verifies what clients read, and the HTTP test verifies what the server actually does (FR-2.2).
