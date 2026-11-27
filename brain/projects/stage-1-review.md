@@ -1,0 +1,39 @@
+---
+type: review
+created: 2026-11-27
+author: codex
+tags: [review, stage-1]
+---
+
+# Stage 1 review
+
+Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requirements]] and [release issue #15](https://github.com/pranavg18/ledger-wallet-api/issues/15).
+
+## What worked
+
+- The team merged the application skeleton, SRS, vault, starter skills and CI in five reviewed PRs. [PR #5](https://github.com/pranavg18/ledger-wallet-api/pull/5) added the build, secret scan and documentation checks to `main`.
+- A concrete example of malformed YAML made the SK-6 review finding reproducible. The fix added a regression test and CI ran it successfully. [CI run](https://github.com/pranavg18/ledger-wallet-api/actions/runs/46000592415)
+
+## What did not work
+
+- A stale merge base invalidated reviews on stacked PRs. Updating the branch and verifying the reviewed diff let the team restore the approval on PR #4.
+- Missing task issues delayed linking Stage 1 submissions. The SRS approval, personal research notes and Claude Code skill evaluation still need completion before the stage can close.
+
+## What we will change next stage
+
+- Create and assign the issue before branching so the commit, PR and traceability entry can refer to it from the start.
+- Update stacked branches before asking for review and confirm that the checks cover the current commit.
+
+## Team input
+
+Each teammate adds at least one bullet in each review section. The initial observations above are for the team to verify and discuss.
+
+## Skill evaluation results
+
+- [Stage 1 evaluation issue #14](https://github.com/pranavg18/ledger-wallet-api/issues/14) tracks the remaining Claude Code runs. Record the final results in `docs/testing.md` before tagging.
+
+## Release checks
+
+- [ ] Finish Stage 1 tasks and record the team's SRS v1.3 approvals and PDF export.
+- [ ] Incorporate all four teammates' Stage 1 review contributions and record the release candidate's CI results.
+- [ ] Move the Stage 1 changelog entries under `v0.1.0`, merge the release changes, then create the annotated tag and GitHub release.
