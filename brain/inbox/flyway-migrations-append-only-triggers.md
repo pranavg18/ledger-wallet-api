@@ -14,6 +14,14 @@ edits can be detected. That's how NFR-MNT-4 is enforced. PostgreSQL triggers tha
 can block `UPDATE`, `DELETE` and `TRUNCATE` on the ledger tables (FR-4.1). Because only a table's
 owner can disable those triggers, the app must connect as a role that doesn't own the tables.
 
+## My takeaway
+
+The main thing I'll watch in T2.3 is which database role the tests connect as. Testcontainers gives
+us a superuser, and a superuser can bypass or disable triggers, so a test run that way would pass
+even if FR-4.1 were broken. The integration tests must create the owner and app roles and run the
+UPDATE/DELETE/TRUNCATE checks as the app role. I also didn't know row-level triggers can't catch
+TRUNCATE, so V1 needs a statement-level trigger for it.
+
 ## Key ideas
 
 - **Versioned migrations.** A file such as `V1__create_ledger_schema.sql` has a version, a

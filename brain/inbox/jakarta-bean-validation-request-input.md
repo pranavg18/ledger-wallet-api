@@ -14,6 +14,14 @@ Validator) lets us declare input rules as annotations, and Spring MVC checks the
 controller method runs. It covers shape and range checks well, but it does not trim input, reject
 unknown JSON fields or check the database, so parts of NFR-SEC-1 and FR-1.1 still need code.
 
+## My takeaway
+
+What surprised me is that validation only checks values; it never changes them. So for FR-1.1 the
+email has to be trimmed before validation runs, or a value like " a@x.com " gets rejected. I also
+won't rely on the default @Email, because the docs don't say exactly what it accepts and our SRS
+rule is precise. I'd rather use an explicit @Pattern plus @Size(max = 254) and write tests for the
+edge cases (two @s, a space, 255 characters).
+
 ## Key ideas
 
 - Version 3.1 (2024) is the current spec. It mainly renamed "Bean Validation" to "Jakarta

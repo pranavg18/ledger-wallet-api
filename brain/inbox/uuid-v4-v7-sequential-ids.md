@@ -14,6 +14,14 @@ sources: [https://www.rfc-editor.org/rfc/rfc9562.html, https://www.postgresql.or
 together in an index. PostgreSQL 17 and Java 21 can only generate v4 themselves, so a v7 generator
 would have to sit behind our `IdGenerator` provider.
 
+## My takeaway
+
+For ADR-0005 I lean towards v7 for ledger_transactions and ledger_entries, because they grow fastest
+and are read newest-first, so a time-ordered key keeps the index compact. Users and wallets can stay
+v4. Since PostgreSQL 17 and Java 21 can't generate v7 themselves, IDs will come from our IdGenerator
+in Java, which also lets tests use fixed IDs. Pagination and the hash chain will still use the
+per-wallet sequence number, never the UUID.
+
 ## Key ideas
 
 - **v4.** 122 random bits plus version and variant bits. Java's `UUID.randomUUID()` uses a
