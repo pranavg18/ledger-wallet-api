@@ -16,3 +16,7 @@ Format: `- YYYY-MM-DD | skill/activity | who (driver) | what changed`
 - 2026-11-08 | brain-refine | claude-code (Pranav Goyal) | Filed seed notes to `resources/`; created MOCs [[ledger-domain]], [[engineering-process]]; created hub [[stage-1-requirements]]
 - 2026-11-08 | ai-session | claude-code (Pranav Goyal) | [[ai-session-2026-11-08-stage-1-skeleton]]
 - 2026-11-09 | ai-session | claude-code (Pranav Goyal) | [[ai-session-2026-11-09-srs-review]]
+- 2026-11-27 | brain-ingest | codex (TanujShah18) | Drafted [[testcontainers-isolated-postgresql-tests]] from the Testcontainers PostgreSQL documentation
+- 2026-11-27 | brain-ingest | codex (TanujShah18) | Drafted [[github-actions-maven-gitleaks]] from the GitHub Actions Maven tutorial and Gitleaks documentation
+- 2026-11-27 | brain-ingest | codex (TanujShah18) | Drafted [[openapi-3-springdoc-contract]] from the springdoc documentation
+- 2026-11-27 | ai-session | codex (TanujShah18) | [[ai-session-2026-11-27-stage-1-research-notes]]

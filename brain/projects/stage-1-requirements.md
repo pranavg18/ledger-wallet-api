@@ -54,3 +54,9 @@ Use `brain-ingest` with a real source for each topic. Write your own handle in `
 These were written by Claude Code from general knowledge, with sources listed. A member should
 check each against its sources during `brain-refine` and correct anything wrong. See
 [[ai-session-2026-11-08-stage-1-skeleton]].
+
+## Tanuj's Stage 1 research drafts
+
+- [[testcontainers-isolated-postgresql-tests]]
+- [[github-actions-maven-gitleaks]]
+- [[openapi-3-springdoc-contract]]
