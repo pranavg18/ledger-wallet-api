@@ -7,7 +7,7 @@ applicable. `TBD` means planned but not yet linked.
 | Requirement | Issue | PR | Test(s) | Skill | ADR | Brain note(s) |
 |---|---|---|---|---|---|---|
 | FR-1 Wallet initialization | TBD (T3.6, T3.7) | TBD | TBD | simulate-transfer (step 1–2) | 0005 (planned) | [[double-entry-bookkeeping]] |
-| FR-2 Idempotent transfers | TBD (T3.2, T3.8) | TBD | TBD | simulate-transfer (step 3) | 0007 (planned) | [[idempotency-keys]] |
+| FR-2 Idempotent transfers | TBD (T3.2, T3.8) | TBD | TBD | simulate-transfer (step 3) | [0007](adr/0007-idempotency-keys.md) | [[idempotency-keys]] |
 | FR-3 Concurrent balance mutability | TBD (T3.1, T3.12) | TBD | TBD | simulate-transfer (step 4) | 0003, 0006 (planned) | [[postgresql-concurrency-control]], [[spring-transaction-management]] |
 | FR-4 Immutable audit trail | TBD (T2.3, T3.4, T3.9) | TBD | TBD | — | [0008](adr/0008-ledger-immutability-and-hash-chain.md) | [[double-entry-bookkeeping]], [[flyway-migrations-append-only-triggers]], [[tamper-evident-logs-hash-chains]] |
 | FR-5 Ledger reconciliation | TBD (T3.10) | TBD | TBD | simulate-transfer (step 5) | [0008](adr/0008-ledger-immutability-and-hash-chain.md) (FR-5.5) | [[double-entry-bookkeeping]], [[ledger-reconciliation-strategies]] |
