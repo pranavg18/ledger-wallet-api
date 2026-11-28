@@ -72,13 +72,18 @@ cover it. That's exactly our FR-4.4, so the check order in FR-4.2 to FR-4.4 isn'
 - **Mirror the original exactly.** The reversal touches the same wallets as the original, in the
   same currency, like Stripe's "refund to the original payment method only". It is built from the
   stored entries, never from client input; the request body only carries `reason` (FR-4.2).
-- **Check order (T3.9).** The admin token comes first (FR-4.2, NFR-SEC-4), then the
-  `Idempotency-Key` rules, then an unknown transaction (404 `TRANSACTION_NOT_FOUND`). After that
-  come the two FR-4.3 checks, `ALREADY_REVERSED` (409) and `CANNOT_REVERSE_REVERSAL` (422), and
-  only then `INSUFFICIENT_FUNDS` (422, FR-4.4) when the recipient has already spent the money.
-  Stripe refuses that last case for some transfers too. The SRS doesn't say which FR-4.3 check
-  runs first, so the error catalogue (ADR-0010) or T3.9 has to fix that order and
-  test it.
+- **Check order (T3.9).**
+  1. The admin token, before anything else (FR-4.2, NFR-SEC-4): 401 `ADMIN_TOKEN_INVALID`.
+  2. Input validation, all 400 and all before any lookup: the `Idempotency-Key` header (FR-2.2), a
+     malformed transaction ID (NFR-SEC-1) and the `reason` body, 1–255 characters
+     (`VALIDATION_FAILED`, FR-4.2). The SRS doesn't say which 400 wins when several inputs are bad,
+     so that belongs in the error catalogue (ADR-0010).
+  3. An unknown transaction: 404 `TRANSACTION_NOT_FOUND`.
+  4. The FR-4.3 checks, `ALREADY_REVERSED` (409) and `CANNOT_REVERSE_REVERSAL` (422). Their order
+     doesn't matter, because they can never both apply: a `REVERSAL` can't be reversed, so it is
+     never "already reversed", and any other transaction never triggers `CANNOT_REVERSE_REVERSAL`.
+  5. `INSUFFICIENT_FUNDS` (422, FR-4.4), which the SRS puts after FR-4.3. This is the case where the
+     recipient has already spent the money, and Stripe refuses it for some transfers too.
 - **No pending state.** Stripe can hold a refund as pending until the balance covers it. We reject
   at once with 422, because a posted transaction is final (SRS Appendix B) and a "pending reversal"
   would need its own state machine.
