@@ -100,6 +100,28 @@ The [T1.4 issue](https://github.com/pranavg18/ledger-wallet-api/issues/14) track
 | 2026-11-28 | 1 | brain-ingest | 2 | PASS | Codex wrote one new RFC 9457 inbox note with `NFR-USE-1`, a source, TL;DR, project implications, and a wikilink. Appended one log entry. Validator passed with 19 notes. |
 | 2026-11-28 | 1 | brain-ingest | 3 | PASS | Codex could not retrieve the IEEE Xplore full text and logged the access failure. Only the log changed. Validator passed with 18 notes. |
 
+### `simulate-transfer` dry run against the contract (2026-11-28, T2.7)
+
+The API endpoints arrive in Stage 3, so the skill was dry-run against a throwaway in-memory stub
+written from `docs/openapi.yaml`. The stub is not committed. It enforced:
+
+- the request schemas: required fields, no unknown fields (`additionalProperties: false`), types,
+  and the 1–10¹² amount range;
+- the `Idempotency-Key` rules of ADR-0007, including replays with `Idempotent-Replayed: true`;
+- per-wallet locking in a fixed order (ADR-0006);
+- `X-Admin-Token` on reconciliation.
+
+An "unsafe" mode of the stub skipped the locking, to check that the skill's race checks really
+fail. Claude Code ran the script, driven by rudra-shroff06. The real-API evaluation is T3.16
+(#61).
+
+| Date | Stage | Skill | Run | Result | Notes / evaluator |
+|---|---|---|---|---|---|
+| 2026-11-28 | 2 | simulate-transfer | Script from `main` (before T2.7), safe stub | FAIL (defect found) | The deposit sent an unknown `reference` field and got 400 `VALIDATION_FAILED`, so every later check failed. Against the real API the skill could never have passed. Fixed in T2.7 (`description`). |
+| 2026-11-28 | 2 | simulate-transfer | T2.7 script, safe stub | PASS | All 13 checks passed: new wallets at 0, deposit 201, replay identical with `Idempotent-Replayed: true`, money moved once, exactly one 201 and one 422 `INSUFFICIENT_FUNDS`, final A = 3000 and B = 7000, neither negative, reconciliation `BALANCED`. Exit code 0, JSON summary parses. |
+| 2026-11-28 | 2 | simulate-transfer | T2.7 script, unsafe stub (no locking) | FAIL (expected) | Both concurrent transfers returned 201 and A ended at -3000. The concurrency, final-balance and no-negative checks failed, exit code 1. Reconciliation still read `BALANCED` because the entries sum correctly, which is why SK-5 checks for negative balances separately. |
+| 2026-11-28 | 2 | simulate-transfer | T2.7 script, `ADMIN_TOKEN` unset | Stopped (expected) | Exit code 2 before any data was created. The token is never printed. |
+
 ## 5. Defect log (TQ-8)
 
 Every significant defect gets an issue labelled `bug` and a regression test that fails before the
