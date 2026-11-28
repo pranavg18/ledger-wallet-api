@@ -3,8 +3,8 @@ type: research
 created: 2026-11-27
 author: apps05
 tags: [database, postgresql, flyway, immutability]
-requirements: [FR-4.1, NFR-INT-3, NFR-MNT-4, NFR-DB-1, NFR-DB-2, NFR-DB-3]
-sources: [https://documentation.red-gate.com/fd/migrations-271585107.html, https://documentation.red-gate.com/fd/versioned-migrations-273973333.html, https://docs.spring.io/spring-boot/how-to/data-initialization.html, https://www.postgresql.org/docs/17/sql-createtrigger.html, https://www.postgresql.org/docs/17/plpgsql-trigger.html, https://www.postgresql.org/docs/17/sql-altertable.html, https://www.postgresql.org/docs/17/ddl-priv.html]
+requirements: [FR-4.1, FR-2.7, NFR-INT-3, NFR-MNT-4, NFR-DB-1, NFR-DB-2, NFR-DB-3]
+sources: [https://documentation.red-gate.com/fd/migrations-271585107.html, https://documentation.red-gate.com/fd/versioned-migrations-273973333.html, https://docs.spring.io/spring-boot/how-to/data-initialization.html, https://www.postgresql.org/docs/17/sql-createtrigger.html, https://www.postgresql.org/docs/17/plpgsql-trigger.html, https://www.postgresql.org/docs/17/sql-altertable.html, https://www.postgresql.org/docs/17/ddl-priv.html, https://www.postgresql.org/docs/17/runtime-config-client.html, https://documentation.red-gate.com/fd/reference/configuration/flyway-namespace/flyway-validate-on-migrate-setting, https://documentation.red-gate.com/fd/reference/commands/validate]
 ---
 
 # Flyway migrations and append-only ledger triggers
@@ -41,7 +41,8 @@ TRUNCATE, so V1 needs a statement-level trigger for it.
 - **Who can switch triggers off.** Changing or dropping a table is a right that comes with
   ownership and can't be granted separately. So a role that only has `SELECT` and `INSERT` can't
   `ALTER TABLE ... DISABLE TRIGGER`. Ordinary triggers also don't fire when
-  `session_replication_role` is `replica`.
+  `session_replication_role` is `replica`, but triggers set with `ENABLE ALWAYS TRIGGER` still do.
+  Only superusers and roles granted the `SET` privilege on that setting can change it.
 
 ## Related
 
@@ -62,8 +63,9 @@ TRUNCATE, so V1 needs a statement-level trigger for it.
   rows.
 - **Two database roles (FR-4.1).**
   - The migration role owns the tables and runs Flyway, configured through `spring.flyway.user`.
-  - The runtime role used by `spring.datasource` gets only `SELECT, INSERT` on the ledger tables
-    (plus `UPDATE` on `wallets` for cached balances, and whatever `idempotency_keys` needs).
+  - The runtime role used by `spring.datasource` gets only `SELECT, INSERT` on the ledger tables,
+    plus `UPDATE` on `wallets` for cached balances. On `idempotency_keys` it also needs `DELETE`,
+    so the purge after 24 hours (FR-2.7) can run. ADR-0007 (T2.5) confirms the final list.
 
   Without this split the app could disable its own protection. Testcontainers starts PostgreSQL as
   a superuser, so the integration tests must create both roles and connect as the runtime role, or
@@ -77,8 +79,11 @@ TRUNCATE, so V1 needs a statement-level trigger for it.
   should reject any PR that changes an existing `V*.sql` file. Flyway's checksum is the safety net,
   but we still have to confirm with a test that our Spring Boot setup refuses to start when a
   checksum changes.
-- **Still to verify before ADR-0005.**
-  - Exactly what Flyway does at startup when a checksum doesn't match. None of the pages we read
-    say, so we'll check it in a test.
-  - Which roles may set `session_replication_role` in PostgreSQL 17. The pages we read don't say.
-    If the runtime role can set it, it could switch our triggers off.
+- **Answered in review (#19).**
+  - *Checksum mismatch.* Flyway's `validateOnMigrate` is on by default, and validation fails when
+    an applied migration's checksum differs. So `migrate()` should fail and Spring Boot should
+    refuse to start. We still prove it with a test.
+  - *`session_replication_role`.* In PostgreSQL 17 only superusers and roles granted the `SET`
+    privilege can change it, so our runtime role can't switch the triggers off this way unless
+    someone grants that. For extra safety, `V1` can also run `ALTER TABLE ... ENABLE ALWAYS
+    TRIGGER` (as the owner) on both ledger tables, so the triggers fire even in `replica` mode.

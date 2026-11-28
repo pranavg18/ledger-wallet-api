@@ -25,8 +25,9 @@ per-wallet sequence number, never the UUID.
 ## Key ideas
 
 - **v4.** 122 random bits plus version and variant bits. Java's `UUID.randomUUID()` uses a
-  cryptographically strong generator. PostgreSQL 17 has exactly one built-in UUID function,
-  `gen_random_uuid()`, and it produces v4.
+  cryptographically strong generator. PostgreSQL 17 has one built-in UUID generation function,
+  `gen_random_uuid()`, and it produces v4. It also has `uuid_extract_timestamp()` and
+  `uuid_extract_version()`, which read existing UUIDs but don't create them.
 - **v7.** A 48-bit Unix-millisecond timestamp, then version bits, then 74 random bits. The values
   sort in creation order as raw bytes. The RFC describes optional counters to stay ordered within
   the same millisecond.
