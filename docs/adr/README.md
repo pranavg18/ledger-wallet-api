@@ -20,6 +20,7 @@ Rules:
 | [0003](0003-postgresql-flyway-testcontainers.md) | PostgreSQL (not SQLite), Flyway migrations, Testcontainers | Accepted | 1 |
 | [0004](0004-integer-minor-units-for-money.md) | Money as integer minor units | Accepted | 1 |
 | [0005](0005-ledger-schema-and-sign-convention.md) | Ledger schema and sign convention | Proposed | 2 |
+| [0006](0006-concurrency-lock-order-isolation-retry.md) | Concurrency: wallet lock order, isolation level and retries | Proposed | 2 |
 | [0007](0007-idempotency-keys.md) | Idempotency keys: scope, in-flight lock, stored responses and purge | Proposed | 2 |
 | [0009](0009-data-access-jdbcclient.md) | Data access with `JdbcClient` | Proposed | 2 |
 
@@ -27,7 +28,6 @@ Rules:
 
 | ADR | Decision to make |
 |---|---|
-| 0006 | Concurrency strategy: row locks with lock ordering vs. SERIALIZABLE + retry |
 | 0008 | Enforcing ledger immutability (triggers, privileges) and the hash chain (TBD-5) |
 | 0010 | Error model: RFC 9457 problem details and error codes |
 | 0011 | Admin endpoint protection |

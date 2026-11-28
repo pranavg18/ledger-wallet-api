@@ -8,7 +8,7 @@ applicable. `TBD` means planned but not yet linked.
 |---|---|---|---|---|---|---|
 | FR-1 Wallet initialization | TBD (T3.6, T3.7) | TBD | TBD | simulate-transfer (step 1–2) | 0005 (planned) | [[double-entry-bookkeeping]] |
 | FR-2 Idempotent transfers | TBD (T3.2, T3.8) | TBD | TBD | simulate-transfer (step 3) | [0007](adr/0007-idempotency-keys.md) | [[idempotency-keys]] |
-| FR-3 Concurrent balance mutability | TBD (T3.1, T3.12) | TBD | TBD | simulate-transfer (step 4) | 0003, 0006 (planned) | [[postgresql-concurrency-control]], [[spring-transaction-management]] |
+| FR-3 Concurrent balance mutability | TBD (T3.1, T3.12) | TBD | TBD | simulate-transfer (step 4) | 0003, [0006](adr/0006-concurrency-lock-order-isolation-retry.md) | [[postgresql-concurrency-control]], [[spring-transaction-management]] |
 | FR-4 Immutable audit trail | TBD (T2.3, T3.4, T3.9) | TBD | TBD | — | 0008 (planned) | [[double-entry-bookkeeping]] |
 | FR-5 Ledger reconciliation | TBD (T3.10) | TBD | TBD | simulate-transfer (step 5) | — | [[double-entry-bookkeeping]] |
 | NFR-INT-2 / TQ-6 Integer money | TBD | TBD (bootstrap) | `MoneyTest` | — | 0004 | [[money-as-integer-minor-units]] |
