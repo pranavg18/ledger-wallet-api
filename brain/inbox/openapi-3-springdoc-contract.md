@@ -26,7 +26,7 @@ sources: [https://springdoc.org/]
 ## Implications for our project
 
 - Compare the hand-maintained and generated approaches in ADR-0012 under TBD-4. Keep `docs/openapi.yaml` as the draft contract while the team makes that decision.
-- Define the Stage 3 drift check around client-visible behavior. Compare paths, methods, required headers, request and response schemas, and status codes. Ignore formatting and ordering differences when they have no effect on clients (NFR-DOC-1).
+- Define the Stage 3 drift check around client-visible behavior. Compare paths, methods, header constraints, request and response schemas, status codes, media types, and which operations require the admin token. Ignore formatting and ordering differences when they have no effect on clients (NFR-DOC-1).
 - Explicitly document RFC 9457 error bodies and Ledger Wallet's stable `code` extension, along with idempotency headers and the admin token where the SRS requires them (NFR-USE-1).
 - The drift check should fail if the generated transfer description marks `Idempotency-Key` optional. FR-2.2 requires the API to reject transfers that omit it.
-- Pair the contract check with an HTTP test that omits the header and asserts HTTP `400` with `IDEMPOTENCY_KEY_MISSING`. The contract check verifies what clients read, and the HTTP test verifies what the server actually does (FR-2.2).
+- Pair the contract check with HTTP tests. A missing header should return `400 IDEMPOTENCY_KEY_MISSING`, while a malformed header should return `400 IDEMPOTENCY_KEY_INVALID`. The contract check verifies what clients read, and the HTTP tests verify what the server does (FR-2.2).

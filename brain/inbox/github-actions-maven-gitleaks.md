@@ -28,4 +28,5 @@ sources: [https://docs.github.com/en/actions/tutorials/build-and-test-code/java-
 - In `.github/workflows/ci.yml`, keep JDK 21, `spotless:check`, and `./mvnw verify` in `build-and-test`. Keep Surefire and Failsafe reports available for diagnosing failures (NFR-MNT-2, TQ-5).
 - Keep full history available to `secret-scan` and retain redaction and a failing exit code. Run the workflow on pushes and PRs as required by NFR-SEC-3.
 - A workflow can pass every Java test and still fail if a credential was committed. A later commit removing the value leaves the earlier patch in Git history, which is why the scan covers more than the current files.
+- A full checkout makes commit history available to the scan. The selected Git history and Gitleaks detection rules determine what it checks. Keep secrets in environment variables even when the scan is green (NFR-SEC-3).
 - Use the failing job to narrow down the problem. A failure in `build-and-test` points to the build, formatting, or a test report. A failure in `secret-scan` calls for checking the redacted Git finding in that job's log (NFR-SEC-3).
