@@ -17,14 +17,17 @@ skeleton. Release tag: `v0.1.0`.
 - [x] `AGENTS.md` at the repo root (SB-4)
 - [x] Brain vault: PARA folders, [[index]], [[log]], `_schema.md`
 - [x] SRS draft: `docs/srs.md` (FR, NFR, SK)
-- [ ] **SRS reviewed and approved by all 4 members**, with open TBDs resolved or assigned
-- [ ] **≥ 10 research notes added through `brain-ingest`.** 7 seed notes exist. Each member adds
-      ≥ 2 more under their own name (SB-6)
-- [ ] GitHub repo created, members added, branch protection on `main`
-- [ ] Issues created for Stage 2 tasks (see `IMPLEMENTATION_PLAN.md`)
-- [ ] Skill evaluation run for `brain-ingest` and recorded in `docs/testing.md` (TQ-7)
-- [ ] Stage review note `stage-1-review` written from `_templates/stage-review.md` (SB-2)
-- [ ] Tag `v0.1.0`
+- [x] **SRS v1.3 reviewed and approved by all four members.** The PDF and approval record are in
+  [PR #11](https://github.com/pranavg18/ledger-wallet-api/pull/11). Remaining TBDs have owners in
+  the implementation plan.
+- [x] **19 research notes** in the vault, with seven seed notes and three under each teammate's
+  handle (SB-6).
+- [x] GitHub repository created, members added, and branch protection enabled on `main`.
+- [x] Issues created for the Stage 2 tasks (see `IMPLEMENTATION_PLAN.md`).
+- [x] `brain-ingest` evaluations recorded in `docs/testing.md` (TQ-7).
+- [x] [[stage-1-review]] includes all four teammates' feedback (SB-2).
+- The [release issue](https://github.com/pranavg18/ledger-wallet-api/issues/15) tracks publication of
+  the `v0.1.0` tag and GitHub release.
 
 ## Research topics (3 per member, see `IMPLEMENTATION_PLAN.md`)
 

@@ -6,15 +6,19 @@ Each stage submission is tagged (`v0.1.0` = Stage 1, `v0.2.0` = Stage 2, `v0.3.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-28
+
 ### Added
 - Stage 1 repository skeleton: Spring Boot 4.1 / Java 21 / Maven project with PostgreSQL, Flyway
   and Testcontainers.
 - `Money` value object using integer minor units, with unit tests (TQ-6).
 - Health-check smoke integration test against an isolated PostgreSQL container (TQ-5).
-- Software Requirements Specification (`docs/srs.md`), ADR-0001 to ADR-0004, development plan,
+- Team-approved SRS v1.3 and its PDF, ADR-0001 to ADR-0004, development plan,
   traceability matrix and test plan.
-- Second-brain Obsidian vault (`brain/`) with PARA folders, schema, templates, index and log.
+- Second-brain Obsidian vault (`brain/`) with PARA folders, schema, templates, index, log,
+  19 research notes, and the Stage 1 review.
 - Agent Skills: `brain-ingest`, `brain-refine`, `brain-query`, `local-check`, `simulate-transfer`.
+- Three passing Stage 1 `brain-ingest` evaluations with results linked from the traceability matrix.
 - GitHub Actions CI: build, lint, tests, secret scanning, SKILL.md and brain-note validation.
   The skill validator parses YAML frontmatter and CI runs regression tests for malformed input.
 - `AGENTS.md`, contribution guide, PR and issue templates.

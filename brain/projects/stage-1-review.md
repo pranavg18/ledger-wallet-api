@@ -7,7 +7,8 @@ tags: [review, stage-1]
 
 # Stage 1 review
 
-Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requirements]] and [release issue #15](https://github.com/pranavg18/ledger-wallet-api/issues/15).
+Team review for the `v0.1.0` release. See [[stage-1-requirements]] and
+[release issue #15](https://github.com/pranavg18/ledger-wallet-api/issues/15).
 
 ## What worked
 
@@ -36,8 +37,7 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
 ## What did not work
 
 - A stale merge base invalidated reviews on stacked PRs. Updating the branch and verifying the reviewed diff let the team restore the approval on PR #4.
-- Missing task issues delayed linking Stage 1 submissions. The SRS approval and personal
-  research notes still need completion before the stage can close.
+- Missing task issues delayed linking Stage 1 submissions.
 - (Tanuj) The skill evaluation was delayed because our test plan assumed access to Claude Code.
   We had to agree on a tool we could run before finishing PR #16.
 - (Aprajita) My research notes drifted from the SRS in places. I wrote validation rules that seemed
@@ -81,17 +81,24 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
 
 ## Team input
 
-Each teammate adds at least one bullet in each review section. The initial observations above are for the team to verify and discuss.
+All four teammates contributed a bullet in each review section.
 
 ## Skill evaluation results
 
 - All three Stage 1 `brain-ingest` evaluations passed in Codex. The
   [results in PR #16](https://github.com/pranavg18/ledger-wallet-api/pull/16) record the
-  outcomes and the evaluator. Verify that the results are on `main` before tagging.
+  outcomes and the evaluator. The results and SK-1 traceability links are on `main`.
 
 ## Release checks
 
-- [ ] Finish Stage 1 research notes and record the team's SRS v1.3 approvals and PDF export. [Research issue #12](https://github.com/pranavg18/ledger-wallet-api/issues/12) · [SRS issue #10](https://github.com/pranavg18/ledger-wallet-api/issues/10)
-- [ ] Merge the recorded Stage 1 skill evaluations. [Evaluation PR #16](https://github.com/pranavg18/ledger-wallet-api/pull/16)
-- [ ] Incorporate all four teammates' Stage 1 review contributions and record the release candidate's CI results.
-- [ ] Move the Stage 1 changelog entries under `v0.1.0`, merge the release changes, then create the annotated tag and GitHub release.
+- [x] Merge all 19 research notes and the approved SRS v1.3 with its PDF.
+  [Final research PR #25](https://github.com/pranavg18/ledger-wallet-api/pull/25) ·
+  [SRS PR #11](https://github.com/pranavg18/ledger-wallet-api/pull/11)
+- [x] Merge the recorded Stage 1 skill evaluations.
+  [Evaluation PR #16](https://github.com/pranavg18/ledger-wallet-api/pull/16)
+- [x] Incorporate all four teammates' Stage 1 review contributions.
+- [x] Move the Stage 1 changelog entries under `v0.1.0`.
+- [ ] Record the passing release candidate CI run in `docs/testing.md`.
+
+After the release PR merges, publish the annotated tag and
+[GitHub release](https://github.com/pranavg18/ledger-wallet-api/releases/tag/v0.1.0).
