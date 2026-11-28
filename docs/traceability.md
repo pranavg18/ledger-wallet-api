@@ -14,7 +14,7 @@ applicable. `TBD` means planned but not yet linked.
 | NFR-INT-2 / TQ-6 Integer money | TBD | TBD (bootstrap) | `MoneyTest` | — | 0004 | [[money-as-integer-minor-units]] |
 | NFR-OBS-1 Health endpoint | TBD | TBD (bootstrap) | `ApplicationSmokeIT#healthEndpointReportsUp` | local-check (step 4) | — | — |
 | TQ-5 Isolated test DB | TBD | TBD (bootstrap) | `ApplicationSmokeIT#connectsToPostgres` | local-check (step 2) | 0003 | [[postgresql-concurrency-control]] |
-| SK-1 brain-ingest | TBD (T1.4) | TBD (bootstrap) | skill eval (docs/testing.md) | brain-ingest | 0001 | [[para-second-brain]] |
+| SK-1 brain-ingest | [#14](https://github.com/pranavg18/ledger-wallet-api/issues/14) | [#16](https://github.com/pranavg18/ledger-wallet-api/pull/16) | [Stage 1 skill evaluation results](testing.md#stage-1-results-2026-11-28) | brain-ingest | 0001 | [[para-second-brain]] |
 | SK-2 brain-refine | TBD (T2.4) | TBD (bootstrap) | skill eval | brain-refine | 0001 | [[para-second-brain]] |
 | SK-3 brain-query | TBD (T2.11) | TBD (bootstrap) | skill eval | brain-query | 0001 | [[para-second-brain]] |
 | SK-4 local-check | TBD (T2.14) | TBD (bootstrap) | skill eval | local-check | — | [[engineering-process]] |
