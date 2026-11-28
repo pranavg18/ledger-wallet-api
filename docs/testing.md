@@ -58,8 +58,8 @@ Record one row per stage submission (link to the Actions run).
 
 ## 4. Skill evaluations (TQ-7)
 
-Run each prompt in Claude Code from the repo root and judge it against the expected outcome. Add a
-results row per stage.
+Run each prompt from the repo root in Codex or Claude Code using the repository's skill instructions.
+Judge the observed behavior against the expected outcome and record the tool and result for each prompt before the stage submission. Use a disposable vault copy for prompts that write notes.
 
 ### Evaluation prompts
 
@@ -67,7 +67,7 @@ results row per stage.
 |---|---|---|
 | brain-ingest | "Ingest https://www.postgresql.org/docs/current/explicit-locking.html into the brain, focus on FR-3" | Finds the existing [[postgresql-concurrency-control]] note and *extends* it rather than duplicating; validator passes; log line added |
 | brain-ingest | "Add this to the brain: https://www.rfc-editor.org/rfc/rfc9457" | New note in `inbox/` with frontmatter, TL;DR, implications, ≥ 1 link, `requirements: [NFR-USE-1]`; log line |
-| brain-ingest | "Ingest this paywalled article: <IEEE link>" | Reports it can't access the source; writes nothing invented |
+| brain-ingest | "Ingest this paywalled article: https://ieeexplore.ieee.org/document/1137968" | Reports that the source is inaccessible when the full text cannot be retrieved. Creates no note. |
 | brain-refine | "Refine the brain" (with 2 inbox notes, one duplicate) | Moves notes with `git mv`, merges the duplicate, updates MOC and index, validator passes |
 | brain-query | "Why do we use PostgreSQL instead of SQLite?" | Answer cites [[postgresql-concurrency-control]] and ADR-0003; no uncited claims |
 | brain-query | "Trace FR-2 from brain note to test" | Table: FR-2 → [[idempotency-keys]] → ADR-0007 → code → tests, with gaps marked |
@@ -82,7 +82,14 @@ results row per stage.
 | 2026-11-27 | 1 | brain-ingest | 1 | PASS (Codex dry run) | Extended [[postgresql-concurrency-control]] for FR-3, added the PostgreSQL 17 source, and logged the run. The validator passed with 15 notes and no duplicate. |
 | 2026-11-27 | 1 | brain-ingest | 2 | PASS (Codex dry run) | Created a temporary RFC 9457 inbox note with `NFR-USE-1`, a source and a wikilink. Logged the run. The validator passed with 16 notes. |
 | 2026-11-27 | 1 | brain-ingest | 3 | PASS (Codex dry run) | The [IEEE Xplore test source](https://ieeexplore.ieee.org/document/1137968) was inaccessible. Only the run log changed. The note count stayed at 16 and the validator passed. |
-| | 1 | brain-ingest | 1–3 | Pending | Run in Claude Code before the Stage 1 submission. The dry runs used a disposable copy of the vault. |
+
+The Stage 1 evaluation used a fresh disposable copy of the vault for each prompt, all from `14ea4dc`. Codex followed `.claude/skills/brain-ingest/SKILL.md`. The [T1.4 issue](https://github.com/pranavg18/ledger-wallet-api/issues/14) tracks the evaluation evidence.
+
+| Date | Stage | Skill | Prompt # | Result | Notes / evaluator |
+|---|---|---|---|---|---|
+| 2026-11-28 | 1 | brain-ingest | 1 | PASS | Codex extended [[postgresql-concurrency-control]] on rechecking funds during FR-3 concurrency, added the PostgreSQL 17 source, and appended one log entry. No duplicate. Validator passed with 18 notes. |
+| 2026-11-28 | 1 | brain-ingest | 2 | PASS | Codex wrote one new RFC 9457 inbox note with `NFR-USE-1`, a source, TL;DR, project implications, and a wikilink. Appended one log entry. Validator passed with 19 notes. |
+| 2026-11-28 | 1 | brain-ingest | 3 | PASS | Codex could not retrieve the IEEE Xplore full text and logged the access failure. Only the log changed. Validator passed with 18 notes. |
 
 ## 5. Defect log (TQ-8)
 
