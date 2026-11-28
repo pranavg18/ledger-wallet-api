@@ -24,3 +24,7 @@ Format: `- YYYY-MM-DD | skill/activity | who (driver) | what changed`
 - 2026-11-27 | brain-ingest | codex (TanujShah18) | Drafted [[github-actions-maven-gitleaks]] from the GitHub Actions Maven tutorial and Gitleaks documentation
 - 2026-11-27 | brain-ingest | codex (TanujShah18) | Drafted [[openapi-3-springdoc-contract]] from the springdoc documentation
 - 2026-11-27 | ai-session | codex (TanujShah18) | [[ai-session-2026-11-27-stage-1-research-notes]]
+- 2026-11-28 | brain-ingest | claude-code (rudra-shroff06) | Added [[reversals-refunds-adjustments]] from the Modern Treasury immutability post, Stripe's refund and transfer-reversal docs and the AccountingTools reversing and adjusting entry articles
+- 2026-11-28 | brain-ingest | claude-code (rudra-shroff06) | Added [[testing-concurrency-in-java]] from the Java 21 `CountDownLatch`, `CyclicBarrier` and `ExecutorService` Javadoc and the Spring test-transaction docs
+- 2026-11-28 | brain-ingest | claude-code (rudra-shroff06) | Added [[admin-endpoint-protection]] from the Spring Boot and Spring Security reference, the Java 21 `MessageDigest` Javadoc and OWASP API Security Top 10 2023 (API2, API5)
+- 2026-11-28 | ai-session | claude-code (rudra-shroff06) | [[ai-session-2026-11-28-rudra-stage-1-research]]

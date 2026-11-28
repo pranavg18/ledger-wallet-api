@@ -66,3 +66,9 @@ check each against its sources during `brain-refine` and correct anything wrong.
 - [[testcontainers-isolated-postgresql-tests]]
 - [[github-actions-maven-gitleaks]]
 - [[openapi-3-springdoc-contract]]
+
+## Rudra's Stage 1 research notes
+
+- [[reversals-refunds-adjustments]]
+- [[testing-concurrency-in-java]]
+- [[admin-endpoint-protection]]
