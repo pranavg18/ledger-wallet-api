@@ -24,3 +24,7 @@ Format: `- YYYY-MM-DD | skill/activity | who (driver) | what changed`
 - 2026-11-27 | brain-ingest | codex (TanujShah18) | Drafted [[github-actions-maven-gitleaks]] from the GitHub Actions Maven tutorial and Gitleaks documentation
 - 2026-11-27 | brain-ingest | codex (TanujShah18) | Drafted [[openapi-3-springdoc-contract]] from the springdoc documentation
 - 2026-11-27 | ai-session | codex (TanujShah18) | [[ai-session-2026-11-27-stage-1-research-notes]]
+- 2026-11-28 | brain-ingest | claude-code (pranavg18) | Added [[tamper-evident-logs-hash-chains]] from Schneier and Kelsey (1999), Crosby and Wallach (USENIX Security 2009) and RFC 2104
+- 2026-11-28 | brain-ingest | claude-code (pranavg18) | Added [[ledger-reconciliation-strategies]] from the PostgreSQL 17 isolation docs, Stripe's Ledger post and Square's Books post
+- 2026-11-28 | brain-ingest | claude-code (pranavg18) | Added [[rfc-9457-problem-details]] from RFC 9457 and the Spring Framework error-response reference
+- 2026-11-28 | ai-session | claude-code (Pranav Goyal) | [[ai-session-2026-11-28-stage-1-research-notes]]
