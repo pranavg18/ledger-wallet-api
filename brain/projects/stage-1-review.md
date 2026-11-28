@@ -27,6 +27,11 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
   [PR #19](https://github.com/pranavg18/ledger-wallet-api/pull/19) I ran `validate_brain.py` on the
   merge result and spot-checked claims against RFC 9562 and the PostgreSQL 17 docs. That is how
   both of Aprajita's open questions got answered in the review.
+- (Pranav) Reviewing the SRS against its sources before any design work. Six review rounds, from
+  outside reviewers and the team, each checked against the brief, the SDLC guide and the IETF
+  idempotency draft. They found real gaps while they were still cheap to fix: the hash chain
+  blocking FR-3.5, reversals needing to be admin-only, the 401 replay case and the overstated
+  tail-deletion claim in FR-4.1. [PR #11](https://github.com/pranavg18/ledger-wallet-api/pull/11)
 
 ## What did not work
 
@@ -44,6 +49,13 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
   new approval was dismissed with "merge-base changed after approval" until the PR's base caught
   up with #1. My own T1.2 notes ([PR #25](https://github.com/pranavg18/ledger-wallet-api/pull/25))
   also started after everyone else's.
+- (Pranav) I set up Phase 1 as stacked PRs, and GitHub didn't recompute the diff after the PR
+  below merged, so approvals on [PR #2](https://github.com/pranavg18/ledger-wallet-api/pull/2) and
+  [PR #3](https://github.com/pranavg18/ledger-wallet-api/pull/3) kept being dismissed until I
+  re-set each base to `main`. Changing the commit trailer convention mid-review also meant
+  rewriting and force-pushing five branches. And my research notes went past the SRS in places
+  (a 32-byte key minimum, an `errors` list), which cost a review round on
+  [PR #23](https://github.com/pranavg18/ledger-wallet-api/pull/23).
 
 ## What we will change next stage
 
@@ -60,6 +72,10 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
   my reviews and notes into Stage 2 decisions instead of leaving them as comments: the
   `Idempotency-Key` pattern allowing spaces (FR-2.2) and the `idempotency_keys` grants in
   ADR-0007, and the reversal check order and admin-route matching for T3.9.
+- (Pranav) I'll branch each PR from `main` where the work allows it, and when a stack can't be
+  avoided I'll re-set the next PR's base right after each merge, before anyone reviews it. Commit
+  conventions get settled before the first push. In notes and ADRs I'll label anything the SRS
+  doesn't require as a proposal from the start and point to the requirement it would change.
 
 ## Team input
 
