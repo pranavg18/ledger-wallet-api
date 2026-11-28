@@ -20,4 +20,4 @@ requirements: [SK-1, TQ-5, NFR-SEC-3, NFR-DOC-1]
 
 ## What needs follow-up
 
-- The drafts contain source summaries and examples. Tanuj's own takeaways and an independent review are pending.
+- Tanuj selected the three takeaways for inclusion in the notes and requested independent review. This session records the drafting provenance.
