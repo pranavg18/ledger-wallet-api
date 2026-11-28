@@ -19,6 +19,7 @@ Rules:
 | [0002](0002-java-spring-boot-maven.md) | Java 21 + Spring Boot + Maven | Accepted | 1 |
 | [0003](0003-postgresql-flyway-testcontainers.md) | PostgreSQL (not SQLite), Flyway migrations, Testcontainers | Accepted | 1 |
 | [0004](0004-integer-minor-units-for-money.md) | Money as integer minor units | Accepted | 1 |
+| [0007](0007-idempotency-keys.md) | Idempotency keys: scope, in-flight lock, stored responses and purge | Proposed | 2 |
 
 ## Planned for Stage 2 (design)
 
@@ -26,7 +27,6 @@ Rules:
 |---|---|
 | 0005 | Ledger schema and sign convention (TBD-2) |
 | 0006 | Concurrency strategy: row locks with lock ordering vs. SERIALIZABLE + retry |
-| 0007 | Idempotency key storage, fingerprinting and retention |
 | 0008 | Enforcing ledger immutability (triggers, privileges) and the hash chain (TBD-5) |
 | 0009 | Data access: `JdbcClient` vs. Spring Data JPA |
 | 0010 | Error model: RFC 9457 problem details and error codes |
