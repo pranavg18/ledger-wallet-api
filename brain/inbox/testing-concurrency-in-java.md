@@ -4,7 +4,7 @@ created: 2026-11-28
 author: rudra-shroff06
 tags: [testing, concurrency, java, spring]
 requirements: [TQ-2, TQ-4, FR-3, FR-3.1, FR-3.2, FR-3.3, FR-3.4, FR-3.5, FR-2.5, FR-4.3, NFR-REL-1]
-sources: [https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CountDownLatch.html, https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CyclicBarrier.html, https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ExecutorService.html, https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/tx.html]
+sources: [https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CountDownLatch.html, https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CyclicBarrier.html, https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ExecutorService.html, https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/tx.html, https://github.com/brettwooldridge/HikariCP]
 ---
 
 # Testing concurrency in Java (latches, barriers, executors)
@@ -66,24 +66,31 @@ fail the test, not hang CI.
 - **Timeouts everywhere.** Use `await(timeout)` and `Future.get(timeout)`, and avoid JUnit's
   preemptive timeouts, which the Spring docs warn run outside the test transaction. A deadlock in
   FR-3.3 then shows up as a failed test.
-- **Real concurrency needs real connections.** If the JDBC connection pool is smaller than `n`,
-  requests queue for a connection and never collide in the database. We should check the pool
-  size used in tests before trusting a pass. To verify: the default Hikari pool size in our Spring
-  Boot setup.
+- **Real concurrency needs real connections.** HikariCP's `maximumPoolSize` defaults to 10, and
+  when the pool is full, `getConnection()` blocks until a connection frees up. We don't override
+  it, so in the 50-debit test at most 10 requests reach PostgreSQL at once. They still collide,
+  just not all 50 together. A test that needs `n` truly parallel transactions must set
+  `spring.datasource.hikari.maximum-pool-size` to at least `n` in the test config. This goes on the
+  T3.12 checklist.
 - **Test cases (T3.12), each against Testcontainers PostgreSQL:**
   - FR-3.1 and FR-3.2: wallet A holds 9000 and two transfers of 6000 start together. Exactly one 201
     and one 422 `INSUFFICIENT_FUNDS`, final balances 3000 and +6000, and reconciliation is
     `BALANCED`. Then a larger version: 50 debits of 10 from 100 give exactly 10 successes and a
     final balance of 0.
   - FR-3.3: A→B and B→A in parallel, many times. Every request finishes before the timeout.
-  - FR-3.5: hold a transfer on A→B open (a test-only hook that waits on a latch inside the
-    transaction), then check that C→D completes before the hook is released.
-  - FR-2.5: the same hook holds the first request with key K. A second request with K must get 409
-    `IDEMPOTENCY_REQUEST_IN_PROGRESS` straight away, so the test also asserts it returned before the
-    hook was released.
+  - FR-3.5: no hook in production code. The test opens its own JDBC connection, runs
+    `SELECT ... FOR UPDATE` on wallet A's row and keeps that transaction open, so a transfer A→B
+    blocks on the lock. A transfer C→D must still complete before the timeout. The test then
+    releases the lock with a rollback, and A→B finishes.
+  - FR-2.5: the same row lock keeps the first request with key K blocked. A second request with K
+    must get 409 `IDEMPOTENCY_REQUEST_IN_PROGRESS` straight away, so the test also asserts it
+    returned before the lock was released. This only works if the service takes the idempotency
+    key's lock *before* the wallet locks, which ADR-0007 and T3.2 must state.
   - FR-4.3: two concurrent reversals of one transaction give one 201 and one 409.
-  - FR-3.4: a fake repository throws SQLSTATE `40001` or `40P01` a set number of times, so the test
-    can count the retries and check for the 503 after the third.
+  - FR-3.4: "retry up to 3 times" means 4 attempts in total. A fake repository throws SQLSTATE
+    `40001` or `40P01` a set number of times. Failing 3 times must still end in a 201 on the 4th
+    attempt, and failing 4 times must give 503 `CONCURRENCY_RETRY_EXHAUSTED`. Testing both sides
+    catches an off-by-one.
 - **Races are probabilistic.** One green run doesn't prove there is no race. Repeat the collision
   tests several times per run (for example `@RepeatedTest`), and add a regression test for every
   race we find (TQ-8).

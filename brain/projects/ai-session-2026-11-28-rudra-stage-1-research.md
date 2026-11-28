@@ -25,22 +25,30 @@ requirements: [SK-1, FR-4.2, TQ-4, NFR-SEC-4]
 - Checking each claim against the source text before writing it. For example, the Spring Security
   reference confirmed that `authorizeHttpRequests` applies only the first matching rule, and the
   Spring testing docs explained why concurrency tests must not be `@Transactional`.
-- Reading the notes against the SRS surfaced two things for later tasks: the reversal endpoint is
-  not under `/admin` (NFR-SEC-4, BR-5), and the SRS doesn't order the two FR-4.3 checks.
+- Reading the notes against the SRS surfaced a point for later tasks: the reversal endpoint is not
+  under `/admin`, so the admin-token filter must match it by method and path (NFR-SEC-4, BR-5).
 
 ## What failed / needed correction
 
 - Two Modern Treasury documentation URLs returned 404, so the reversal note cites their
   engineering post on ledger immutability instead.
-- A first draft gave the FR-4.3 checks an order that the SRS doesn't state. It now says the order
-  still has to be decided (ADR-0010 or T3.9).
+- Corrections from the review on [PR #25](https://github.com/pranavg18/ledger-wallet-api/pull/25):
+  - The draft treated the order of the two FR-4.3 checks as open. Pranav pointed out that they can
+    never both apply, so their order doesn't matter.
+  - The FR-3.4 test plan was off by one: 3 retries means 4 attempts.
+  - The `reason` validation wasn't placed in the reversal check order (Aprajita).
+  - The HikariCP pool size was left as "to verify". The README gives the default as 10.
+  - Pranav suggested holding a row lock from a second JDBC connection instead of adding a test hook
+    to production code.
 
 ## Human review
 
-- Reviewed by: Rudra (driver), then the PR reviewer
-- PR: linked from issue #24
+- Reviewed by: Rudra (driver), Aprajita and Pranav
+- PR: [#25](https://github.com/pranavg18/ledger-wallet-api/pull/25)
 
 ## Follow-ups
 
-- Check the default JDBC pool size in our tests before trusting the T3.12 concurrency results.
-- Decide the order of `ALREADY_REVERSED` and `CANNOT_REVERSE_REVERSAL` (FR-4.3).
+- ADR-0007 and T3.2: take the idempotency key's lock before the wallet locks, so FR-2.5 can be
+  tested with a row lock.
+- T3.12: set the test pool size to at least `n` where a test needs `n` parallel transactions.
+- ADR-0010: decide which 400 wins when several reversal inputs are invalid.

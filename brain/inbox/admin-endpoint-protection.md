@@ -47,7 +47,7 @@ before the `Idempotency-Key` check.
 ## Related
 
 - [[spring-transaction-management]]: the token check must run before any transaction starts
-- [[jakarta-bean-validation-request-input]]: error format for the 401 (NFR-USE-1)
+- [[rfc-9457-problem-details]]: the problem format the 401 must use (NFR-USE-1)
 - [[reversals-refunds-adjustments]]: the reversal endpoint this protects (FR-4.2)
 - [[engineering-process]]
 - [[ai-session-2026-11-28-rudra-stage-1-research]]
