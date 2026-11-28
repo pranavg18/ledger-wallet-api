@@ -143,7 +143,8 @@ Grants to `ledger_app`, issued by `V1` as the owner:
 | `ledger_metadata` | `SELECT, INSERT` | The first-start insert in §5 |
 
 - The schema gives `ledger_app` `USAGE` only, not `CREATE`. It gets no grants on
-  `flyway_schema_history`.
+  `flyway_schema_history`. `ledger_owner` needs `CREATE` on the schema, or must own it, because
+  since PostgreSQL 15 `public` no longer grants `CREATE` to everyone.
 - `ledger_app` gets no `TRUNCATE`, `REFERENCES` or `TRIGGER` on any table, and no `SET` privilege
   on `session_replication_role`.
 - **Locally**, the Compose database creates both roles with an init script, using throwaway dev
@@ -263,8 +264,9 @@ doesn't need it.
      so refuse to start.
 - **Dev and test key (NFR-PORT-1, NFR-SEC-3):** the project provides one fixed value for local runs
   and tests only. It must read as obviously non-secret, and gitleaks allowlists it (T3.4). The
-  application logs a warning at startup when it is in use. Local runs and tests share it, so a
-  local database created by the tests also opens under `./mvnw spring-boot:run`.
+  application logs a warning at startup when it is in use. Local runs and tests use the same
+  value, so there is one setting fewer to manage. They never share a database: tests use
+  throwaway Testcontainers databases (NFR-DB-3).
 
 ### 6. Where the code lives (T2.16, T3.4)
 
@@ -291,6 +293,11 @@ doesn't need it.
 - **Negative / trade-offs:**
   - Two roles and an init script make local setup and the Testcontainers configuration more
     complex.
+  - Flyway runs inside the application at startup (`spring.flyway.user`), so the application
+    process holds `ledger_owner` credentials, even though its `DataSource` only uses
+    `ledger_app`. This meets FR-4.1, which is about the role the application connects as. A
+    compromised process could still read those credentials. A later option, outside local runs,
+    is to run migrations as a separate step before the application starts.
   - A leaked key lets an attacker with database access rebuild every chain. There is no rotation
     in 1.0, against RFC 2104's advice, and that is an accepted risk ([[tamper-evident-logs-hash-chains]]).
   - Tail deletion stays undetectable without an external chain head (FR-4.6).
@@ -298,9 +305,9 @@ doesn't need it.
     catches a missed truncation.
 - **Follow-up work:**
   - **T2.3 (Aprajita):** create the function, triggers, roles' grants and `ledger_metadata` as in
-    §1, §2 and §5. Add `CHECK (octet_length(hmac) = 32)` on `ledger_entries` and
-    `CHECK (octet_length(value) = 32)` for the `hmac_key_check` row if you agree. Add the role
-    init scripts for Compose and Testcontainers, and run the FR-4.1 tests as `ledger_app`,
+    §1, §2 and §5. Add `CHECK (octet_length(hmac) = 32)` on `ledger_entries`, and the row-specific
+    `CHECK (name <> 'hmac_key_check' OR octet_length(value) = 32)` on `ledger_metadata`. Add the
+    role init scripts for Compose and Testcontainers, and run the FR-4.1 tests as `ledger_app`,
     including one that tries `ALTER TABLE … DISABLE TRIGGER`.
   - **T3.1 (Aprajita):** truncate the `Clock` value to microseconds, and call `EntryHasher` under
     the wallet lock.
