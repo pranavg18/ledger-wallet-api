@@ -69,9 +69,11 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
   and T3.14 test cases rather than notes.
 - (Rudra) Before I review, I'll check that the merge box can count my approval (write access, the
   PR showing only its own commits), so approvals aren't wasted. I'll also turn the open points from
-  my reviews and notes into Stage 2 decisions instead of leaving them as comments: the
-  `Idempotency-Key` pattern allowing spaces (FR-2.2) and the `idempotency_keys` grants in
-  ADR-0007, and the reversal check order and admin-route matching for T3.9.
+  my reviews and notes into Stage 2 decisions instead of leaving them as comments. In ADR-0007:
+  the `Idempotency-Key` pattern allowing spaces (FR-2.2), the `idempotency_keys` grants, and taking
+  the key's lock before the wallet locks (FR-2.5). For T3.9: matching the reversal route by method
+  and path in the admin filter, and, with ADR-0010, which 400 wins when several reversal inputs
+  are invalid.
 - (Pranav) I'll branch each PR from `main` where the work allows it, and when a stack can't be
   avoided I'll re-set the next PR's base right after each merge, before anyone reviews it. Commit
   conventions get settled before the first push. In notes and ADRs I'll label anything the SRS
