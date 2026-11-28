@@ -98,7 +98,8 @@ All four teammates contributed a bullet in each review section.
   [Evaluation PR #16](https://github.com/pranavg18/ledger-wallet-api/pull/16)
 - [x] Incorporate all four teammates' Stage 1 review contributions.
 - [x] Move the Stage 1 changelog entries under `v0.1.0`.
-- [ ] Record the passing release candidate CI run in `docs/testing.md`.
+- [x] Record the passing release candidate CI run in `docs/testing.md`.
+  [Actions run 46151405957](https://github.com/pranavg18/ledger-wallet-api/actions/runs/46151405957)
 
 After the release PR merges, publish the annotated tag and
 [GitHub release](https://github.com/pranavg18/ledger-wallet-api/releases/tag/v0.1.0).
