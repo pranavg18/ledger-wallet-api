@@ -202,23 +202,25 @@ What this covers:
 `HashChainService.verify(walletId)` reads the wallet's entries joined to their transactions,
 `ORDER BY seq`, inside reconciliation's single REPEATABLE READ snapshot (FR-5.1), and for each entry:
 
-1. **Sequence:** the first entry must have `seq = 1` and each next one `seq = previous + 1`. If not,
-   report a `HASH_CHAIN_SEQUENCE_GAP` discrepancy (id = the entry after the gap, expected = the
-   missing `seq`, actual = the `seq` found).
+1. **Sequence:** the first entry must have `seq = 1` and each next one `seq = previous + 1`.
 2. **MAC:** recompute the message from the stored row, using the **stored** `hmac` of the
    previous row as the previous hash (zeros for the first entry), and compare it with the stored
-   `hmac` using `MessageDigest.isEqual`. If they differ, report `HASH_CHAIN_MISMATCH` (id = entry
-   id, expected = recomputed, actual = stored, both lowercase hex).
+   `hmac` using `MessageDigest.isEqual`.
+
+If either check fails, report one `HASH_CHAIN_BROKEN` discrepancy for that entry, with `id` = the
+entry's ID. That is the type `docs/openapi.yaml` already defines for FR-5.6. Its `expectedMinor`
+and `actualMinor` fields are money amounts, so they are left out for this type. Each entry is
+reported at most once, even when both checks fail.
 
 Because each step uses the stored previous `hmac`, one edited entry produces exactly one
-`HASH_CHAIN_MISMATCH` at that entry, not a cascade through the rest of the wallet:
+discrepancy at that entry, not a cascade through the rest of the wallet:
 
 | Tampering (as owner or superuser with the triggers disabled) | What `verify` reports |
 |---|---|
-| An entry's or its transaction's content changed | `HASH_CHAIN_MISMATCH` on each affected entry |
-| An interior entry deleted | `HASH_CHAIN_SEQUENCE_GAP` and `HASH_CHAIN_MISMATCH` on the next entry |
-| An entry inserted | `HASH_CHAIN_MISMATCH` (no key, so no valid `hmac`), plus a gap or a `UNIQUE (wallet_id, seq)` failure |
-| An entry's `hmac` replaced | `HASH_CHAIN_MISMATCH` on that entry and the next |
+| An entry's or its transaction's content changed | `HASH_CHAIN_BROKEN` on each affected entry |
+| An interior entry deleted | `HASH_CHAIN_BROKEN` on the next entry (sequence gap and MAC) |
+| An entry inserted | `HASH_CHAIN_BROKEN` on the inserted entry (no key, so no valid `hmac`), or a `UNIQUE (wallet_id, seq)` failure if it reuses a `seq` |
+| An entry's `hmac` replaced | `HASH_CHAIN_BROKEN` on that entry and the next |
 | A wallet's newest entries deleted | **Nothing.** The accepted gap in FR-4.1 and FR-4.6 |
 
 Tail deletion and ADR-0005's `max(seq) + 1`: after the newest entries are deleted, the next posting
@@ -226,7 +228,10 @@ reuses their `seq` and chains from the new tail, so the gap stays invisible to `
 still reports the wallet if its cached balance wasn't edited to match. Closing the gap needs a copy
 of each chain head outside the database, which FR-4.6 puts out of scope for 1.0.
 
-The two discrepancy type names are part of the FR-5.6 report contract that ADR-0010 catalogues.
+The report doesn't say which check failed or carry the two hashes. Reconciliation is a check for
+an admin, and someone investigating can recompute the entry from the database. If the team wants
+more detail, a string field for the hashes could be added to the contract in T2.12. This ADR
+doesn't need it.
 
 ### 5. The key and the key check (FR-4.6, NFR-PORT-1)
 
@@ -305,8 +310,8 @@ The two discrepancy type names are part of the FR-5.6 report contract that ADR-0
   - **T3.10 (Pranav):** `HashChainService.verify` and one corruption test per row of the §4 table.
     Each test runs as `ledger_owner` and disables the named triggers in its own transaction before
     tampering. `DISABLE TRIGGER ALL` would also need a superuser for the foreign-key triggers.
-  - **T2.9 (Pranav):** list `HASH_CHAIN_MISMATCH` and `HASH_CHAIN_SEQUENCE_GAP` in the ADR-0010
-    catalogue of discrepancy types.
+  - **T2.9 (Pranav):** list `HASH_CHAIN_BROKEN` with this meaning in the ADR-0010 catalogue of
+    discrepancy types.
   - **T2.14 (Tanuj):** `local-check` sets the dev key for local runs.
   - **Proposal, not required by the SRS: a minimum key length.** RFC 2104 recommends a key at least
     as long as the hash output, so startup could reject a `LEDGER_HMAC_KEY` shorter than 32 bytes.
