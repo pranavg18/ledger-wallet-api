@@ -20,3 +20,7 @@ Format: `- YYYY-MM-DD | skill/activity | who (driver) | what changed`
 - 2026-11-27 | brain-ingest | apps05 | Added [[flyway-migrations-append-only-triggers]] from the Flyway migration docs, Spring Boot's Flyway how-to and the PostgreSQL 17 trigger, ALTER TABLE and privilege docs
 - 2026-11-27 | brain-ingest | apps05 | Added [[uuid-v4-v7-sequential-ids]] from RFC 9562, the PostgreSQL 17/18 UUID docs and the Java 21 `UUID` Javadoc
 - 2026-11-28 | brain-refine | apps05 (Aprajita Agarwal) | Applied review fixes from #19 to [[jakarta-bean-validation-request-input]], [[flyway-migrations-append-only-triggers]] and [[uuid-v4-v7-sequential-ids]]
+- 2026-11-27 | brain-ingest | codex (TanujShah18) | Drafted [[testcontainers-isolated-postgresql-tests]] from the Testcontainers PostgreSQL documentation
+- 2026-11-27 | brain-ingest | codex (TanujShah18) | Drafted [[github-actions-maven-gitleaks]] from the GitHub Actions Maven tutorial and Gitleaks documentation
+- 2026-11-27 | brain-ingest | codex (TanujShah18) | Drafted [[openapi-3-springdoc-contract]] from the springdoc documentation
+- 2026-11-27 | ai-session | codex (TanujShah18) | [[ai-session-2026-11-27-stage-1-research-notes]]

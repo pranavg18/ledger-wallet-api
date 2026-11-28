@@ -60,3 +60,9 @@ check each against its sources during `brain-refine` and correct anything wrong.
 - [[jakarta-bean-validation-request-input]]
 - [[flyway-migrations-append-only-triggers]]
 - [[uuid-v4-v7-sequential-ids]]
+
+## Tanuj's Stage 1 research drafts
+
+- [[testcontainers-isolated-postgresql-tests]]
+- [[github-actions-maven-gitleaks]]
+- [[openapi-3-springdoc-contract]]
