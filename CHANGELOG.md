@@ -16,4 +16,5 @@ Each stage submission is tagged (`v0.1.0` = Stage 1, `v0.2.0` = Stage 2, `v0.3.0
 - Second-brain Obsidian vault (`brain/`) with PARA folders, schema, templates, index and log.
 - Agent Skills: `brain-ingest`, `brain-refine`, `brain-query`, `local-check`, `simulate-transfer`.
 - GitHub Actions CI: build, lint, tests, secret scanning, SKILL.md and brain-note validation.
+  The skill validator parses YAML frontmatter and CI runs regression tests for malformed input.
 - `AGENTS.md`, contribution guide, PR and issue templates.
