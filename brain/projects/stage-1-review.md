@@ -13,16 +13,30 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
 
 - The team merged the application skeleton, SRS, vault, starter skills and CI in five reviewed PRs. [PR #5](https://github.com/pranavg18/ledger-wallet-api/pull/5) added the build, secret scan and documentation checks to `main`.
 - A concrete example of malformed YAML made the SK-6 review finding reproducible. The fix added a regression test and CI ran it successfully. [CI run](https://github.com/pranavg18/ledger-wallet-api/actions/runs/46000592415)
+- (Aprajita) Reviewing in a ring caught real errors before anything was built on them. On
+  [PR #19](https://github.com/pranavg18/ledger-wallet-api/pull/19), Rudra checked my research notes
+  against their sources and answered both of my open questions. He also found places where the notes
+  didn't match the SRS: `@NotBlank` for `name` (FR-1.1) and `VALIDATION_FAILED` for every 400
+  (FR-2.2). The fixes went into [PR #21](https://github.com/pranavg18/ledger-wallet-api/pull/21)
+  before ADR-0005 or T2.3 relied on them.
 
 ## What did not work
 
 - A stale merge base invalidated reviews on stacked PRs. Updating the branch and verifying the reviewed diff let the team restore the approval on PR #4.
 - Missing task issues delayed linking Stage 1 submissions. The SRS approval, personal research notes and Claude Code skill evaluation still need completion before the stage can close.
+- (Aprajita) My research notes drifted from the SRS in places. I wrote validation rules that seemed
+  sensible, but some were stricter or broader than the requirement text. The notes also left two
+  "still to verify" questions that one more source would have answered. Both cost an extra review
+  round and a follow-up PR.
 
 ## What we will change next stage
 
 - Create and assign the issue before branching so the commit, PR and traceability entry can refer to it from the start.
 - Update stacked branches before asking for review and confirm that the checks cover the current commit.
+- (Aprajita) When a note, ADR or test states a rule, cite the exact SRS requirement it implements
+  and check it against that wording. Also, turn reviewer answers into tests straight away: the
+  Flyway checksum startup test, and the runtime role being unable to disable triggers, become T2.3
+  and T3.14 test cases rather than notes.
 
 ## Team input
 
