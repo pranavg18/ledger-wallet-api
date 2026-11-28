@@ -25,7 +25,7 @@ the choice more than convenience does:
   ADR-0005).
 
 `spring-boot-starter-jdbc` is already in `pom.xml`. A-5 lists the project's dependencies as Spring
-Boot, the PostgreSQL driver, Flyway and Testcontainers.
+Boot, the PostgreSQL driver, Flyway and Testcontainers, so adding a library means updating A-5.
 
 ## Options considered
 
@@ -38,13 +38,13 @@ Boot, the PostgreSQL driver, Flyway and Testcontainers.
    which our triggers turn into a runtime error, so every ledger entity would need `@Immutable`.
    With IDs we assign ourselves, `save()` treats a new entity as existing and calls `merge`, which
    runs an extra `SELECT` before each insert unless every entity implements `Persistable`. It also
-   adds Hibernate, a large dependency A-5 doesn't name.
+   adds Hibernate, a large dependency that would mean updating A-5.
 3. **Spring Data JDBC.** Lighter than JPA, with no lazy loading or dirty checking. But it has the
    same new-or-existing rule: an entity with a non-null ID and no version column is saved with an
    `UPDATE`, which the ledger triggers would reject. Every entity would need `Persistable`, and
    locks and aggregates would still be `@Query` strings.
-4. **jOOQ or MyBatis.** Typed or mapped SQL, but each is a new dependency outside A-5, for a
-   schema of six tables.
+4. **jOOQ or MyBatis.** Typed or mapped SQL, but each is a new dependency (and an A-5 update) for
+   a schema of six tables.
 
 ## Decision
 
@@ -61,9 +61,11 @@ Rules for the repositories:
   built at runtime is fixed SQL, such as the number of placeholders.
 - **Ledger tables are insert-only in code too.** `LedgerRepository` has no update or delete
   method, so the triggers are a backstop, not the first line.
-- **Transactions belong to the services.** `@Transactional` sits on public service methods, and
-  `JdbcClient` joins that transaction through the auto-configured
-  `DataSourceTransactionManager`. Repositories never start their own.
+- **Transactions belong to the services.** Services start them, either with `@Transactional` on
+  public methods or with a `TransactionTemplate` where the boundary has to sit inside a method:
+  ADR-0006 retries a transaction that fails with SQLSTATE `40001` or `40P01` from outside it, and
+  ADR-0007 wraps the action in a savepoint. `JdbcClient` joins whichever transaction is active
+  through the auto-configured `DataSourceTransactionManager`. Repositories never start their own.
 - **Locks are explicit SQL.** Wallet locks use one
   `SELECT ... FROM wallets WHERE id IN (...) ORDER BY id FOR UPDATE` (ADR-0005, ADR-0006), and the
   advisory lock is a `pg_try_advisory_xact_lock(...)` call (ADR-0007).
@@ -77,8 +79,8 @@ Rules for the repositories:
 - Positive:
   - What runs against the database is exactly what's in the code, which makes reviewing locks,
     isolation and the FR-4.1 boundary straightforward.
-  - No new dependency, and no ORM behaviour (dirty checking, merge-before-insert) that could
-    collide with the append-only triggers.
+  - No new dependency and no A-5 change, and no ORM behaviour (dirty checking,
+    merge-before-insert) that could collide with the append-only triggers.
   - Repository integration tests can assert on exact SQL results against Testcontainers
     PostgreSQL.
 - Negative / trade-offs:
