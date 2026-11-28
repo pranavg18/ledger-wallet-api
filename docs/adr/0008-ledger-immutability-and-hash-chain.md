@@ -208,10 +208,19 @@ What this covers:
    previous row as the previous hash (zeros for the first entry), and compare it with the stored
    `hmac` using `MessageDigest.isEqual`.
 
-If either check fails, report one `HASH_CHAIN_BROKEN` discrepancy for that entry, with `id` = the
-entry's ID. That is the type `docs/openapi.yaml` already defines for FR-5.6. Its `expectedMinor`
-and `actualMinor` fields are money amounts, so they are left out for this type. Each entry is
-reported at most once, even when both checks fail.
+If either check fails, report one `HASH_CHAIN_BROKEN` discrepancy for that entry, using the type
+`docs/openapi.yaml` already defines. Following FR-5.6's "(type, id, expected, actual)":
+
+- `id`: the entry's ID;
+- `expected`: the recomputed `hmac`, as lowercase hex;
+- `actual`: the stored `hmac`, as lowercase hex.
+
+Each entry is reported at most once, even when both checks fail. The MAC check fails on every
+chain break, including a sequence gap. The entry after a gap was hashed with the deleted entry's
+`hmac`, which no longer matches the row before it. So `expected` and `actual` are always the two
+hashes. The contract's `expectedMinor` and `actualMinor` are integer money amounts, so they stay
+empty for this type. T2.12 adds the two string fields to the discrepancy schema in
+`docs/openapi.yaml` (proposed names `expected` and `actual`).
 
 Because each step uses the stored previous `hmac`, one edited entry produces exactly one
 discrepancy at that entry, not a cascade through the rest of the wallet:
@@ -229,10 +238,8 @@ reuses their `seq` and chains from the new tail, so the gap stays invisible to `
 still reports the wallet if its cached balance wasn't edited to match. Closing the gap needs a copy
 of each chain head outside the database, which FR-4.6 puts out of scope for 1.0.
 
-The report doesn't say which check failed or carry the two hashes. Reconciliation is a check for
-an admin, and someone investigating can recompute the entry from the database. If the team wants
-more detail, a string field for the hashes could be added to the contract in T2.12. This ADR
-doesn't need it.
+Reporting the hashes is safe. Both are already in the database or computable from it, and
+neither reveals the key.
 
 ### 5. The key and the key check (FR-4.6, NFR-PORT-1)
 
@@ -319,6 +326,9 @@ doesn't need it.
     tampering. `DISABLE TRIGGER ALL` would also need a superuser for the foreign-key triggers.
   - **T2.9 (Pranav):** list `HASH_CHAIN_BROKEN` with this meaning in the ADR-0010 catalogue of
     discrepancy types.
+  - **T2.12 (Tanuj):** add string `expected` and `actual` fields to the discrepancy schema in
+    `docs/openapi.yaml`, used by `HASH_CHAIN_BROKEN` (§4), next to the existing `expectedMinor` and
+    `actualMinor`.
   - **T2.14 (Tanuj):** `local-check` sets the dev key for local runs.
   - **Proposal, not required by the SRS: a minimum key length.** RFC 2104 recommends a key at least
     as long as the hash output, so startup could reject a `LEDGER_HMAC_KEY` shorter than 32 bytes.
