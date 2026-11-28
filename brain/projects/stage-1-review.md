@@ -21,6 +21,12 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
   didn't match the SRS: `@NotBlank` for `name` (FR-1.1) and `VALIDATION_FAILED` for every 400
   (FR-2.2). The fixes went into [PR #21](https://github.com/pranavg18/ledger-wallet-api/pull/21)
   before ADR-0005 or T2.3 relied on them.
+- (Rudra) Checking documents against their sources instead of only reading them. On
+  [PR #2](https://github.com/pranavg18/ledger-wallet-api/pull/2) I compared `docs/srs.md` with the
+  exported PDF and confirmed the PDF was the v1.3 we agreed. On
+  [PR #19](https://github.com/pranavg18/ledger-wallet-api/pull/19) I ran `validate_brain.py` on the
+  merge result and spot-checked claims against RFC 9562 and the PostgreSQL 17 docs. That is how
+  both of Aprajita's open questions got answered in the review.
 
 ## What did not work
 
@@ -33,6 +39,11 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
   sensible, but some were stricter or broader than the requirement text. The notes also left two
   "still to verify" questions that one more source would have answered. Both cost an extra review
   round and a follow-up PR.
+- (Rudra) Merging [PR #2](https://github.com/pranavg18/ledger-wallet-api/pull/2) took several
+  rounds. At first my account had no write access, so my approval didn't count. After that, each
+  new approval was dismissed with "merge-base changed after approval" until the PR's base caught
+  up with #1. My own T1.2 notes ([PR #25](https://github.com/pranavg18/ledger-wallet-api/pull/25))
+  also started after everyone else's.
 
 ## What we will change next stage
 
@@ -44,6 +55,11 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
   and check it against that wording. Also, turn reviewer answers into tests straight away: the
   Flyway checksum startup test, and the runtime role being unable to disable triggers, become T2.3
   and T3.14 test cases rather than notes.
+- (Rudra) Before I review, I'll check that the merge box can count my approval (write access, the
+  PR showing only its own commits), so approvals aren't wasted. I'll also turn the open points from
+  my reviews and notes into Stage 2 decisions instead of leaving them as comments: the
+  `Idempotency-Key` pattern allowing spaces (FR-2.2) and the `idempotency_keys` grants in
+  ADR-0007, and the reversal check order and admin-route matching for T3.9.
 
 ## Team input
 
