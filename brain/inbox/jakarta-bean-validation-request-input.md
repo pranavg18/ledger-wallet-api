@@ -3,8 +3,8 @@ type: research
 created: 2026-11-27
 author: apps05
 tags: [validation, api, spring, security]
-requirements: [NFR-SEC-1, NFR-SEC-2, FR-1.1, FR-1.2, FR-1.6, NFR-USE-1]
-sources: [https://jakarta.ee/specifications/bean-validation/3.1/, https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-validation.html, https://docs.spring.io/spring-boot/reference/io/validation.html, https://docs.hibernate.org/stable/validator/reference/en-US/html_single/]
+requirements: [NFR-SEC-1, NFR-SEC-2, FR-1.1, FR-1.2, FR-1.6, FR-2.2, NFR-USE-1]
+sources: [https://jakarta.ee/specifications/bean-validation/3.1/, https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-validation.html, https://docs.spring.io/spring-boot/reference/io/validation.html, https://docs.hibernate.org/stable/validator/reference/en-US/html_single/, https://github.com/FasterXML/jackson/blob/main/jackson3/MIGRATING_TO_JACKSON_3.md, https://docs.spring.io/spring-boot/reference/features/json.html]
 ---
 
 # Jakarta Bean Validation for request input
@@ -59,21 +59,38 @@ edge cases (two @s, a space, 255 characters).
 - Amounts (NFR-SEC-2): `@NotNull @Min(1) @Max(1_000_000_000_000L) Long amountMinor`. The type must
   be a `long`/`Long`, never `double`. Fractional and non-numeric JSON values have to fail during
   JSON parsing and come back as 400 as well. That's a test, not something Bean Validation does.
+  - By default Jackson is lenient here: it turns `10.5` into `10` and the string `"100"` into
+    `100`. In Jackson 2 the settings are `DeserializationFeature.ACCEPT_FLOAT_AS_INT` and
+    `MapperFeature.ALLOW_COERCION_OF_SCALARS`, both on by default. We must turn both off, as
+    ADR-0004 already asks.
+  - Spring Boot 4 auto-configures a Jackson 3 `JsonMapper`, and Jackson 3 changed several
+    defaults. Its migration guide doesn't mention these two settings, so T3.3 has to confirm their
+    Jackson 3 names and defaults, with a test that sends `10.5` and `"100"` and expects 400.
 - Email (FR-1.1): the SRS rule is precise: trim, then exactly one `@` with text on both sides, no
   spaces, at most 254 characters. We shouldn't rely on the default `@Email` behaviour. Trim in the
   service (or a Jackson deserializer) first, then check with `@Size(max = 254)` plus a `@Pattern`
   such as `^[^@\s]+@[^@\s]+$`. Uniqueness ignoring case is a database job (unique index on
   `lower(email)`, NFR-DB-2), not a validation annotation.
-- `name` (FR-1.1): `@NotBlank @Size(min = 1, max = 100)`. Check whether the SRS counts characters
-  the same way `@Size` does for non-ASCII names before we freeze the rule.
+- `name` (FR-1.1): `@NotNull @Size(min = 1, max = 100)`. FR-1.1 only says 1–100 characters, so
+  `@NotBlank` would add a rule the SRS doesn't have (rejecting a name made only of spaces). If we
+  want that rule, FR-1.1 has to change first.
+  - `@Size` counts `String.length()`, which is UTF-16 code units, so an emoji counts as 2. The
+    team has to decide whether "characters" in FR-1.1 means code units or code points before the
+    rule is frozen.
 - Currency (FR-1.2): `@Pattern("^[A-Z]{3}$")` only checks the shape. Whether the code is
   *supported* (INR, USD, EUR) is configuration, so it should be checked in the service, and it
   still returns 400.
 - Path IDs (NFR-SEC-1): declare `@PathVariable UUID id`. Spring then rejects a malformed UUID
   during type conversion, before validation runs. Map that error to 400 too, not 500.
 - Unknown JSON fields (NFR-SEC-1, section 3.4): Bean Validation can't see them. Jackson's
-  fail-on-unknown-properties setting has to be turned on. That's a separate test.
-- Error format (NFR-USE-1): one `@RestControllerAdvice` should map `MethodArgumentNotValidException`,
-  `HandlerMethodValidationException`, conversion errors and JSON parse errors to an RFC 9457 problem
-  with `code: VALIDATION_FAILED`, so every 400 looks the same. Each FR-1 E2E test should assert that
-  `code`.
+  `FAIL_ON_UNKNOWN_PROPERTIES` has to be turned on. Jackson 3 turns it off by default, so we must
+  set it explicitly. That's a separate test.
+- Error format (NFR-USE-1): one `@RestControllerAdvice` should map
+  `MethodArgumentNotValidException`, `HandlerMethodValidationException`, conversion errors and JSON
+  parse errors to an RFC 9457 problem. Not every 400 is `VALIDATION_FAILED`, though:
+  - NFR-USE-1 uses `VALIDATION_FAILED` only where section 4 names no other code.
+  - FR-2.2 gives the `Idempotency-Key` header its own codes: `IDEMPOTENCY_KEY_MISSING` and
+    `IDEMPOTENCY_KEY_INVALID`. The handler has to check for those cases first (Rudra covers this in
+    T3.2).
+
+  Each FR-1 E2E test should assert the exact `code` it expects.
