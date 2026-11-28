@@ -1,0 +1,24 @@
+flowchart LR
+    subgraph developer["Developer machine"]
+        direction LR
+        client["Local HTTP client"]
+        api["Ledger Wallet API (Java 21 JVM)"]
+        subgraph compose["Docker Compose"]
+            direction TB
+            localDb[("PostgreSQL 17")]
+            localVolume[("ledger-pgdata volume")]
+            localDb --> localVolume
+        end
+        client -->|"HTTP to localhost:8080"| api
+        api -->|"JDBC to localhost:5432"| localDb
+        localTests["Local integration tests (Maven verify)"]
+        localTestDb[("Disposable PostgreSQL 17")]
+        localTests -->|"Testcontainers"| localTestDb
+    end
+
+    subgraph ci["GitHub Actions runner (ubuntu-latest)"]
+        direction LR
+        build["build-and-test (JDK 21 and Maven Wrapper)"]
+        testDb[("Disposable PostgreSQL 17")]
+        build -->|"Integration tests via Testcontainers"| testDb
+    end
