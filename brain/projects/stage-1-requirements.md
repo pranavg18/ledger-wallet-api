@@ -66,3 +66,9 @@ check each against its sources during `brain-refine` and correct anything wrong.
 - [[testcontainers-isolated-postgresql-tests]]
 - [[github-actions-maven-gitleaks]]
 - [[openapi-3-springdoc-contract]]
+
+## Pranav's Stage 1 research notes
+
+- [[tamper-evident-logs-hash-chains]]
+- [[ledger-reconciliation-strategies]]
+- [[rfc-9457-problem-details]]
