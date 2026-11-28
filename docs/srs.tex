@@ -116,6 +116,7 @@ Pranav Goyal, Aprajita Agarwal, Rudra Hardik Shroff, Tanuj Hardikkumar Shah & 20
 Pranav Goyal & 2026-11-09 & Fixes from team review (Rudra Hardik Shroff): idempotency key scope and expiry, email rules, system account creation, hash chain format, database privilege boundary, entry currency constraint & 1.1 \\
 Pranav Goyal & 2026-11-09 & Wording fixes from team review: late-retry rule (FR-2.7, A-4), ADR-0008 reference, email syntax & 1.2 \\
 Pranav Goyal & 2026-11-09 & FR-4.1 no longer claims detection of every privileged change (team review, Rudra Hardik Shroff) & 1.3 \\
+Pranav Goyal, Aprajita Agarwal, Rudra Hardik Shroff, Tanuj Hardikkumar Shah & 2026-11-28 & Approved v1.3 as the Stage 1 implementation baseline. \href{https://github.com/pranavg18/ledger-wallet-api/pull/11}{Team sign-off in PR \#11}. & 1.3 \\
 \end{longtable}
 }
 
@@ -942,13 +943,7 @@ Here, ``safety'' means preventing financial loss or corruption.
   \textbf{NFR-SEC-4} Administrative endpoints shall require an \texttt{X-Admin-Token} header matching the
   \texttt{ADMIN\_\allowbreak{}TOKEN} environment variable, compared in constant time. A missing or invalid token returns
 
-  \begin{enumerate}
-  \def\labelenumi{\arabic{enumi}.}
-  \setcounter{enumi}{400}
-  \tightlist
-  \item
-    If \texttt{ADMIN\_\allowbreak{}TOKEN} is unset or empty, every admin request is rejected (fail closed).
-  \end{enumerate}
+  401. If \texttt{ADMIN\_\allowbreak{}TOKEN} is unset or empty, every admin request is rejected (fail closed).
 \item
   \textbf{NFR-SEC-5} Error responses shall not expose stack traces, SQL or internal class names.
 \item

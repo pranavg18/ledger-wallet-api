@@ -33,6 +33,7 @@
 | Pranav Goyal | 2026-11-09 | Fixes from team review (Rudra Hardik Shroff): idempotency key scope and expiry, email rules, system account creation, hash chain format, database privilege boundary, entry currency constraint | 1.1 |
 | Pranav Goyal | 2026-11-09 | Wording fixes from team review: late-retry rule (FR-2.7, A-4), ADR-0008 reference, email syntax | 1.2 |
 | Pranav Goyal | 2026-11-09 | FR-4.1 no longer claims detection of every privileged change (team review, Rudra Hardik Shroff) | 1.3 |
+| Pranav Goyal, Aprajita Agarwal, Rudra Hardik Shroff, Tanuj Hardikkumar Shah | 2026-11-28 | Approved v1.3 as the Stage 1 implementation baseline. [Team sign-off in PR #11](https://github.com/pranavg18/ledger-wallet-api/pull/11). | 1.3 |
 
 ---
 
