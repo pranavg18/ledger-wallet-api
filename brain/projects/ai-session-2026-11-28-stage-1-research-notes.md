@@ -37,4 +37,4 @@ requirements: [SK-1, FR-4.6, FR-5, NFR-USE-1]
 ## Human review
 
 - Pranav reviews and adjusts each "My takeaway" section before review.
-- PR: _to be added_
+- PR: [#23](https://github.com/pranavg18/ledger-wallet-api/pull/23)
