@@ -6,6 +6,9 @@ Each stage submission is tagged (`v0.1.0` = Stage 1, `v0.2.0` = Stage 2, `v0.3.0
 
 ## [Unreleased]
 
+### Added
+- Stage 2 deployment diagram for local development and the CI test environment (T2.13).
+
 ## [0.1.0] - 2026-11-28
 
 ### Added

@@ -82,6 +82,39 @@ sequenceDiagram
 
 ## 5. Deployment view
 
-Local only: the app runs as a JVM process (`./mvnw spring-boot:run` or `java -jar`), PostgreSQL
-runs in Docker (`compose.yaml`), and CI uses GitHub Actions with Testcontainers. A container image
-is a candidate for Stage 3 (TBD-3).
+The local API runs on the developer's JVM. Docker Compose starts PostgreSQL and stores its data
+in the `ledger-pgdata` volume. CI runs integration tests against a separate PostgreSQL container.
+[Mermaid source](diagrams/deployment.mmd)
+
+```mermaid
+flowchart LR
+    subgraph developer["Developer machine"]
+        direction LR
+        client["Local HTTP client"]
+        api["Ledger Wallet API (Java 21 JVM)"]
+        subgraph compose["Docker Compose"]
+            direction TB
+            localDb[("PostgreSQL 17")]
+            localVolume[("ledger-pgdata volume")]
+            localDb --> localVolume
+        end
+        client -->|"HTTP to localhost:8080"| api
+        api -->|"JDBC to localhost:5432"| localDb
+    end
+
+    subgraph ci["GitHub Actions runner (ubuntu-latest)"]
+        direction LR
+        build["build-and-test (JDK 21 and Maven Wrapper)"]
+        testDb[("Disposable PostgreSQL 17")]
+        build -->|"Integration tests via Testcontainers"| testDb
+    end
+```
+
+- **Local.** `./mvnw spring-boot:run` starts the PostgreSQL service defined in
+  [`compose.yaml`](../compose.yaml). The API accepts HTTP requests on port 8080 by default.
+- **CI.** The [workflow](../.github/workflows/ci.yml) runs on pushes and pull requests. The
+  `build-and-test` job runs lint and Maven verification. `secret-scan` and `validate-docs` run as
+  separate jobs. The CI test database is created for the test run (TQ-5, NFR-DB-3).
+
+The release 1.0 deployment target is local. Deployment beyond the developer machine remains
+open under TBD-3.
