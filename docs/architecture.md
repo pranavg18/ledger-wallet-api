@@ -83,7 +83,8 @@ sequenceDiagram
 ## 5. Deployment view
 
 The local API runs on the developer's JVM. Docker Compose starts PostgreSQL and stores its data
-in the `ledger-pgdata` volume. CI runs integration tests against a separate PostgreSQL container.
+in the `ledger-pgdata` volume. Integration tests use disposable PostgreSQL containers on the
+developer machine and in CI.
 [Mermaid source](diagrams/deployment.mmd)
 
 ```mermaid
@@ -100,6 +101,9 @@ flowchart LR
         end
         client -->|"HTTP to localhost:8080"| api
         api -->|"JDBC to localhost:5432"| localDb
+        localTests["Local integration tests (Maven verify)"]
+        localTestDb[("Disposable PostgreSQL 17")]
+        localTests -->|"Testcontainers"| localTestDb
     end
 
     subgraph ci["GitHub Actions runner (ubuntu-latest)"]
@@ -112,6 +116,7 @@ flowchart LR
 
 - **Local.** `./mvnw spring-boot:run` starts the PostgreSQL service defined in
   [`compose.yaml`](../compose.yaml). The API accepts HTTP requests on port 8080 by default.
+  Running `./mvnw verify` locally starts a separate PostgreSQL container for integration tests.
 - **CI.** The [workflow](../.github/workflows/ci.yml) runs on pushes and pull requests. The
   `build-and-test` job runs lint and Maven verification. `secret-scan` and `validate-docs` run as
   separate jobs. The CI test database is created for the test run (TQ-5, NFR-DB-3).

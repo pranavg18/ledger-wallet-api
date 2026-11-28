@@ -11,6 +11,9 @@ flowchart LR
         end
         client -->|"HTTP to localhost:8080"| api
         api -->|"JDBC to localhost:5432"| localDb
+        localTests["Local integration tests (Maven verify)"]
+        localTestDb[("Disposable PostgreSQL 17")]
+        localTests -->|"Testcontainers"| localTestDb
     end
 
     subgraph ci["GitHub Actions runner (ubuntu-latest)"]
