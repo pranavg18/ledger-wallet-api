@@ -18,9 +18,9 @@ through `ProblemDetail` and `ResponseEntityExceptionHandler`.
 
 Our SRS makes `code` the field clients branch on (NFR-USE-1), but the RFC says `type` is the
 problem's primary identifier. So in ADR-0010 (T2.9) I'll give each code a matching `type` URI,
-with one entry per code in the catalogue, so the two always agree. Validation errors will also
-carry a list of field errors, because the RFC's own example does exactly that and NFR-SEC-1 needs
-it.
+with one entry per code in the catalogue, so the two always agree. I'd also like validation errors
+to carry a list of field errors, as the RFC's own example does. NFR-SEC-1 doesn't require that, so
+it's a choice for ADR-0010.
 
 ## Key ideas
 
@@ -45,15 +45,24 @@ it.
   path by default. Spring Boot 4.1.2 brings Spring Framework 7.0.10, so we still get the old
   behaviour.
 
+## Related
+
+- [[jakarta-bean-validation-request-input]]: where most 400 problems come from
+- [[openapi-3-springdoc-contract]]: where the problem types are documented
+- [[idempotency-keys]]: its 400, 409 and 422 cases are problems too
+- [[ledger-domain]]
+- [Issue #22](https://github.com/pranavg18/ledger-wallet-api/issues/22)
+
 ## Implications for our project
 
 - **`code` as an extension, `type` as the identifier (NFR-USE-1).** Keep `code` (for example
   `INSUFFICIENT_FUNDS`) as a required extension member, as `docs/openapi.yaml` already does. Also
   give each code a stable `type` URI, such as `/problems/insufficient-funds`, documented in the
   OpenAPI contract (NFR-DOC-1). Tests assert on `code`.
-- **`VALIDATION_FAILED` carries an `errors` list (NFR-SEC-1).** Each item names the field and what
-  is wrong with it, following the RFC's validation example. This connects to
-  [[jakarta-bean-validation-request-input]].
+- **An `errors` list for `VALIDATION_FAILED`: ADR-0010 should decide.** NFR-SEC-1 only requires a
+  400 with a problem response. Adding an `errors` extension, with one item per invalid field,
+  follows the RFC's validation example and would help clients, but it is a design choice, not a
+  requirement. This connects to [[jakarta-bean-validation-request-input]].
 - **One global handler (T3.3).** A `@RestControllerAdvice` maps our exceptions and Spring's
   built-in ones to problems with catalogued codes, including the 500 `INTERNAL_ERROR` fallback.
   If we turn on `spring.mvc.problemdetails.enabled`, our advice must still take precedence.
@@ -63,11 +72,3 @@ it.
   should say whether we set it (for example to a request ID) or leave it out.
 - **Order of checks (FR-2.9).** Only the first failing check produces a problem, so each test
   expects exactly one `code`.
-
-## Related
-
-- [[jakarta-bean-validation-request-input]]: where most 400 problems come from
-- [[openapi-3-springdoc-contract]]: where the problem types are documented
-- [[idempotency-keys]]: its 400, 409 and 422 cases are problems too
-- [[ledger-domain]]
-- [Issue #22](https://github.com/pranavg18/ledger-wallet-api/issues/22)

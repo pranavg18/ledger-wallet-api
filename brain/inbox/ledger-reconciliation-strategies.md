@@ -42,6 +42,14 @@ per-book version counter.
 - **Corrections are new entries (Square).** There are no updates to entries, only inserts. A
   mistake is fixed by writing a new entry that offsets it.
 
+## Related
+
+- [[double-entry-bookkeeping]]: why every transaction and currency sums to zero
+- [[postgresql-concurrency-control]]: isolation levels and MVCC
+- [[tamper-evident-logs-hash-chains]]
+- [[ledger-domain]]
+- [Issue #22](https://github.com/pranavg18/ledger-wallet-api/issues/22)
+
 ## Implications for our project
 
 - **FR-5.1 snapshot.** Run every check of one report in a single `BEGIN ISOLATION LEVEL REPEATABLE
@@ -59,17 +67,10 @@ per-book version counter.
 - **Incremental mode later.** Store a checkpoint per wallet (last verified sequence number and its
   running balance and chain hash), then verify only newer entries. That needs a table outside the
   ledger tables, so it belongs in a later ADR, not 1.0.
-- **A cheap extra check.** If the per-wallet sequence has no gaps, its highest value must equal the
-  wallet's entry count, like Square's version counter. Combined with the hash chain, that also
-  catches deleted interior entries.
+- **Idea, not a requirement: a sequence count check.** If the per-wallet sequence has no gaps, its
+  highest value must equal the wallet's entry count, like Square's version counter. It isn't one of
+  FR-5.2 to FR-5.5, and FR-5.5's chain walk already catches deleted interior entries, so it would
+  only be a cheaper early signal.
 - **Completeness idea, not a requirement.** Every stored successful idempotency response should
   point to an existing transaction (FR-2.6). This isn't in the SRS, so it would need an SRS change
   before it becomes a check.
-
-## Related
-
-- [[double-entry-bookkeeping]]: why every transaction and currency sums to zero
-- [[postgresql-concurrency-control]]: isolation levels and MVCC
-- [[tamper-evident-logs-hash-chains]]
-- [[ledger-domain]]
-- [Issue #22](https://github.com/pranavg18/ledger-wallet-api/issues/22)
