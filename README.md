@@ -56,7 +56,7 @@ Spotless (google-java-format) · GitHub Actions. Rationale: [`docs/adr/`](docs/a
 |---|---|---|
 | Pranav Goyal | `@TBD` | R3: integrity, reconciliation and API safety |
 | Aprajita Agarwal | `@apps05` | R1: ledger core and persistence |
-| Rudra Hardik Shroff | `@rudra-shroff06 | R2: money movement and concurrency |
+| Rudra Hardik Shroff | `@rudra-shroff06` | R2: money movement and concurrency |
 | Tanuj Hardikkumar Shah | `@TanujShah18` | R4: quality, CI, docs and releases |
 
 Who owns what, task by task: [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md).
