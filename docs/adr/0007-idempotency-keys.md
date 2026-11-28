@@ -154,8 +154,9 @@ level for money movement; this flow depends on it, see step 3):
 - Nothing else is stored: no request body, no headers, no admin token (NFR-OBS-2).
 - No foreign key to `ledger_transactions`: the purge deletes these rows, while ledger rows are
   append-only (FR-4.1). The link the other way is `ledger_transactions.idempotency_key`
-  (FR-4.5). ADR-0005 / T2.3 may add a `UNIQUE` constraint there as a second guard, since keys are
-  global.
+  (FR-4.5), which has **no foreign key and no `UNIQUE` constraint** (ADR-0005 §6). After the purge
+  a key is treated as new (FR-2.7), so a late retry may legitimately post a second transaction
+  under the same key. A `UNIQUE` there would turn that into a 500.
 - **Runtime role grants:** `SELECT, INSERT, DELETE` on `idempotency_keys`, and no `UPDATE`,
   because a record is written once with its final response. `pg_try_advisory_xact_lock` needs no
   grant.
