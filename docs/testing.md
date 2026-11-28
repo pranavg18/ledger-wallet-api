@@ -55,6 +55,7 @@ Record one row per stage submission (link to the Actions run).
 | Date | Stage | Commit | Run | build-and-test | secret-scan | validate-docs | Notes |
 |---|---|---|---|---|---|---|---|
 | 2026-11-08 | 1 (local, pre-GitHub) | uncommitted | local `./mvnw verify` | PASS (7 unit, 2 IT) | n/a | PASS | First CI run pending repo creation |
+| 2026-11-28 | 1 (release candidate) | `7f9be33` | [Actions run 46151405957](https://github.com/pranavg18/ledger-wallet-api/actions/runs/46151405957) | PASS | PASS | PASS | Stage 1 review and `v0.1.0` changelog in PR #17. |
 
 ## 4. Skill evaluations (TQ-7)
 
