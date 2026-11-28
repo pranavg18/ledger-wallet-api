@@ -20,6 +20,7 @@ Rules:
 | [0003](0003-postgresql-flyway-testcontainers.md) | PostgreSQL (not SQLite), Flyway migrations, Testcontainers | Accepted | 1 |
 | [0004](0004-integer-minor-units-for-money.md) | Money as integer minor units | Accepted | 1 |
 | [0005](0005-ledger-schema-and-sign-convention.md) | Ledger schema and sign convention | Proposed | 2 |
+| [0009](0009-data-access-jdbcclient.md) | Data access with `JdbcClient` | Proposed | 2 |
 
 ## Planned for Stage 2 (design)
 
@@ -28,7 +29,6 @@ Rules:
 | 0006 | Concurrency strategy: row locks with lock ordering vs. SERIALIZABLE + retry |
 | 0007 | Idempotency key storage, fingerprinting and retention |
 | 0008 | Enforcing ledger immutability (triggers, privileges) and the hash chain (TBD-5) |
-| 0009 | Data access: `JdbcClient` vs. Spring Data JPA |
 | 0010 | Error model: RFC 9457 problem details and error codes |
 | 0011 | Admin endpoint protection |
 | 0012 | OpenAPI: hand-written vs. generated contract, and how CI detects drift (TBD-4) |
