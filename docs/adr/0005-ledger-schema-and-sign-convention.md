@@ -25,7 +25,8 @@ Constraints that shape the schema:
   (FR-4.6). The statement is newest first with a cursor (FR-1.5).
 - IDs and timestamps come from provider interfaces (`IdGenerator`, `Clock`, C-4), and API
   identifiers are UUIDs (section 3.4).
-- Dependencies are limited to Spring Boot, the PostgreSQL driver, Flyway and Testcontainers (A-5).
+- A-5 lists the project's dependencies (Spring Boot, the PostgreSQL driver, Flyway and
+  Testcontainers), so adding a library means updating A-5.
 
 Out of scope here: the `idempotency_keys` columns (ADR-0007), the hash chain format and the
 `ledger_metadata` contents (ADR-0008), the lock order and isolation level (ADR-0006) and the data
@@ -60,7 +61,7 @@ access library (ADR-0009). This ADR only fixes how those tables connect to the l
    inserts across the primary-key index.
 2. **UUID v7 for the two ledger tables, v4 for users and wallets.** Time-ordered keys keep the
    fastest-growing indexes compact (RFC 9562, section 6.11). Neither Java 21 nor PostgreSQL 17 can
-   generate v7, and A-5 rules out adding a library, so `IdGenerator` needs a small in-house
+   generate v7, and a UUID library would mean updating A-5, so `IdGenerator` gets a small in-house
    generator with a unit test against the RFC's bit layout.
 3. **`bigint` keys.** Smallest, but they would appear in the API, which section 3.4 rules out, and
    they reveal row counts.
@@ -106,7 +107,8 @@ Unique index on `lower(email)` (FR-1.1, NFR-DB-2).
 Constraints (all from NFR-DB-2):
 
 - `UNIQUE NULLS NOT DISTINCT (user_id, currency)`: one wallet per user per currency and one
-  system account per currency. FR-1.7's startup insert uses `ON CONFLICT ... DO NOTHING` on it.
+  system account per currency. FR-1.7's startup insert uses plain `ON CONFLICT DO NOTHING`, with
+  no conflict target, so it doesn't depend on how PostgreSQL infers a `NULLS NOT DISTINCT` index.
 - `UNIQUE (id, currency)`, the target of the entries' composite foreign key.
 - `CHECK (user_id IS NULL OR balance_minor >= 0)` (NFR-INT-5, BR-2).
 
@@ -120,6 +122,9 @@ Constraints (all from NFR-DB-2):
 | `idempotency_key` | `text NOT NULL` | the key the operation ran under (FR-4.5) |
 | `reverses_transaction_id` | `uuid NULL UNIQUE` FK → `ledger_transactions(id)` | at most one reversal per transaction (FR-4.3, NFR-DB-2) |
 | `created_at` | `timestamptz NOT NULL` | UTC (FR-4.5) |
+
+`CHECK ((type = 'REVERSAL') = (reverses_transaction_id IS NOT NULL))`: a reversal always points to
+its original, and no other type points anywhere (FR-4.2, FR-4.5).
 
 `ledger_entries`
 
@@ -139,6 +144,9 @@ Constraints:
   always matches its wallet's (NFR-DB-2).
 - `UNIQUE (wallet_id, seq)`. Its index also serves the statement (FR-1.5) and the chain walk
   (FR-5.5).
+- An index on `transaction_id`. PostgreSQL doesn't index foreign-key columns automatically, and
+  entries are looked up by transaction in `GET /transactions/{id}` (FR-4.7), when a reversal reads
+  the original's entries (FR-4.2) and in reconciliation (FR-5.3, NFR-PERF-2).
 
 An entry's `createdAt` in the API is its transaction's `created_at`, read through the join, so
 the time is stored once. `systemAccount: true` (FR-1.7) is `wallets.user_id IS NULL`.
@@ -199,7 +207,8 @@ FR-5.3 detects the same fault after the fact either way.
   - **ADR-0008 (Pranav):** what `hmac` covers (FR-4.6 says the entry, its transaction and the
     previous hash), its encoding, each chain's starting value and the `ledger_metadata` layout.
   - **T2.2:** the ER diagram draws these four tables plus ADR-0007's and ADR-0008's.
-  - **T2.3:** the `V1` migration, triggers, runtime role and one integration test per constraint.
+  - **T2.3:** the `V1` migration, triggers, runtime role and one integration test per constraint,
+    plus one showing that two startups leave exactly one system account per currency (FR-1.7).
   - **T3.1:** the UUID v7 generator in `IdGenerator`, with a unit test against RFC 9562's layout.
 
 ## Brain notes cited
