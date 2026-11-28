@@ -12,7 +12,9 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
 ## What worked
 
 - The team merged the application skeleton, SRS, vault, starter skills and CI in five reviewed PRs. [PR #5](https://github.com/pranavg18/ledger-wallet-api/pull/5) added the build, secret scan and documentation checks to `main`.
-- A concrete example of malformed YAML made the SK-6 review finding reproducible. The fix added a regression test and CI ran it successfully. [CI run](https://github.com/pranavg18/ledger-wallet-api/actions/runs/46000592415)
+- (Tanuj) In PR #5, a concrete example of malformed skill YAML made the review finding easy to
+  reproduce. The regression test then gave us a way to verify the fix in CI.
+  [CI run](https://github.com/pranavg18/ledger-wallet-api/actions/runs/46000592415)
 - (Aprajita) Reviewing in a ring caught real errors before anything was built on them. On
   [PR #19](https://github.com/pranavg18/ledger-wallet-api/pull/19), Rudra checked my research notes
   against their sources and answered both of my open questions. He also found places where the notes
@@ -25,6 +27,8 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
 - A stale merge base invalidated reviews on stacked PRs. Updating the branch and verifying the reviewed diff let the team restore the approval on PR #4.
 - Missing task issues delayed linking Stage 1 submissions. The SRS approval and personal
   research notes still need completion before the stage can close.
+- (Tanuj) The skill evaluation was delayed because our test plan assumed access to Claude Code.
+  We had to agree on a tool we could run before finishing PR #16.
 - (Aprajita) My research notes drifted from the SRS in places. I wrote validation rules that seemed
   sensible, but some were stricter or broader than the requirement text. The notes also left two
   "still to verify" questions that one more source would have answered. Both cost an extra review
@@ -34,6 +38,8 @@ Draft for the team to complete before the `v0.1.0` release. See [[stage-1-requir
 
 - Create and assign the issue before branching so the commit, PR and traceability entry can refer to it from the start.
 - Update stacked branches before asking for review and confirm that the checks cover the current commit.
+- (Tanuj) I’ll confirm which tool we’ll use before running the evaluations and link the results
+  from the traceability matrix in the same PR.
 - (Aprajita) When a note, ADR or test states a rule, cite the exact SRS requirement it implements
   and check it against that wording. Also, turn reviewer answers into tests straight away: the
   Flyway checksum startup test, and the runtime role being unable to disable triggers, become T2.3
