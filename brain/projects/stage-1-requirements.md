@@ -72,3 +72,9 @@ check each against its sources during `brain-refine` and correct anything wrong.
 - [[tamper-evident-logs-hash-chains]]
 - [[ledger-reconciliation-strategies]]
 - [[rfc-9457-problem-details]]
+
+## Rudra's Stage 1 research notes
+
+- [[reversals-refunds-adjustments]]
+- [[testing-concurrency-in-java]]
+- [[admin-endpoint-protection]]
