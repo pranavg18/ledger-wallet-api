@@ -58,8 +58,10 @@ Record one row per stage submission (link to the Actions run).
 
 ## 4. Skill evaluations (TQ-7)
 
-Run each prompt from the repo root in Codex or Claude Code using the repository's skill instructions.
-Judge the observed behavior against the expected outcome and record the tool and result for each prompt before the stage submission. Use a disposable vault copy for prompts that write notes.
+Run each prompt from the repo root in Codex or Claude Code using the repository's skill
+instructions. Judge the observed behavior against the expected outcome and record the tool
+and result for each prompt before the stage submission. Use a disposable vault copy for
+prompts that write notes.
 
 ### Evaluation prompts
 
@@ -75,7 +77,7 @@ Judge the observed behavior against the expected outcome and record the tool and
 | local-check | "Run local check" with Docker stopped | Stops at pre-flight with a clear "Docker is not running" message |
 | simulate-transfer | "Simulate a transfer" (server running, Stage 3+) | All checks PASS; table of balances; reconciliation BALANCED |
 
-### Results
+### Dry runs (2026-11-27)
 
 | Date | Stage | Skill | Prompt # | Result | Notes / evaluator |
 |---|---|---|---|---|---|
@@ -83,7 +85,13 @@ Judge the observed behavior against the expected outcome and record the tool and
 | 2026-11-27 | 1 | brain-ingest | 2 | PASS (Codex dry run) | Created a temporary RFC 9457 inbox note with `NFR-USE-1`, a source and a wikilink. Logged the run. The validator passed with 16 notes. |
 | 2026-11-27 | 1 | brain-ingest | 3 | PASS (Codex dry run) | The [IEEE Xplore test source](https://ieeexplore.ieee.org/document/1137968) was inaccessible. Only the run log changed. The note count stayed at 16 and the validator passed. |
 
-The Stage 1 evaluation used a fresh disposable copy of the vault for each prompt, all from `14ea4dc`. Codex followed `.claude/skills/brain-ingest/SKILL.md`. The [T1.4 issue](https://github.com/pranavg18/ledger-wallet-api/issues/14) tracks the evaluation evidence.
+### Stage 1 results (2026-11-28)
+
+**Evaluator.** Codex judged the results against the expected outcomes. TanujShah18
+coordinated the evaluation. Each prompt used a fresh disposable vault from `14ea4dc`.
+Codex loaded `.claude/skills/brain-ingest/SKILL.md` explicitly, so this run verified the
+skill's behavior after it was loaded. Automatic skill selection remains untested.
+The [T1.4 issue](https://github.com/pranavg18/ledger-wallet-api/issues/14) tracks this evidence.
 
 | Date | Stage | Skill | Prompt # | Result | Notes / evaluator |
 |---|---|---|---|---|---|
