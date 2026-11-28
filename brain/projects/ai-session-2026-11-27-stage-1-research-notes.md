@@ -20,4 +20,6 @@ requirements: [SK-1, TQ-5, NFR-SEC-3, NFR-DOC-1]
 
 ## What needs follow-up
 
-- Tanuj selected the three takeaways for inclusion in the notes and requested independent review. This session records the drafting provenance.
+- Tanuj selected the three takeaways for inclusion. The notes use his handle for T1.2 task
+  ownership after Aprajita's review. Codex drafted the note text, and the vault log records
+  those runs. [PR #13](https://github.com/pranavg18/ledger-wallet-api/pull/13)
